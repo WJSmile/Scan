@@ -3,9 +3,12 @@ package com.palmpay.scan.view
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.FrameLayout
+import android.widget.ImageView
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.OnLifecycleEvent
 import com.palmpay.scan.code.NativeLib
 import com.palmpay.scan.utils.Utils
 import java.io.File
@@ -18,44 +21,70 @@ class ScanView @JvmOverloads constructor(
 
     private val cameraView: CameraView
     private val nativeLib: NativeLib = NativeLib()
-    private val codePointView:CodePointView
+    private val codePointView: CodePointView
+
+    private val imageView: ImageView
+
     init {
         cameraView = CameraView(context)
         addView(cameraView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
 
+        imageView = ImageView(context)
+
+        addView(imageView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+
         codePointView = CodePointView(context)
         addView(codePointView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+
+        initWeChatModel()
+
+        cameraView.setOnAnalyzerListener {
+            nativeLib.setImageYuvByte(
+                it.planes[0].buffer,
+                it.planes[1].buffer,
+                it.planes[2].buffer,
+                it.planes[0].rowStride,
+                it.planes[0].pixelStride,
+                it.planes[1].rowStride,
+                it.planes[1].pixelStride,
+                it.planes[2].rowStride,
+                it.planes[2].pixelStride,
+                it.width,
+                it.height
+            )
+            it.close()
+        }
+
+        nativeLib.setBitMapCallBack {
+            (context as FragmentActivity).runOnUiThread {
+                imageView.setImageBitmap(it)
+            }
+        }
+
+        nativeLib.setPointCallBack {
+            if (it.isNotEmpty()) {
+                val lifecycle: Lifecycle = (context as FragmentActivity).lifecycle
+                if (lifecycle is LifecycleRegistry) {
+                    context.runOnUiThread {
+                        lifecycle.addObserver(CameraLifecycleObserver())
+                        lifecycle.currentState = Lifecycle.State.CREATED
+                    }
+                }
+            }
+            codePointView.setQrCodes(it)
+        }
+    }
+
+    inner class CameraLifecycleObserver : LifecycleObserver {
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+        fun onCreated() {
+            nativeLib.pause(true)
+        }
     }
 
 
     fun start() {
-        initWeChatModel()
-        nativeLib.setPointCallBack {
-            codePointView.setQrCodes(it)
-            if (it.isNotEmpty()){
-                val lifecycle: Lifecycle = (context as FragmentActivity).lifecycle
-                if (lifecycle is LifecycleRegistry) {
-                    (context as FragmentActivity).runOnUiThread {
-                        lifecycle.currentState = Lifecycle.State.CREATED
-                    }
-                }
-                nativeLib.pause(true)
-            }
-        }
-
-        cameraView.setOnAnalyzerListener {
-            nativeLib.setImageByte(
-                Utils.yuv420ThreePlanesToNV21(
-                    it.planes, it.width,
-                    it.height
-                ),
-                it.width,
-                it.height,
-            )
-            it.close()
-        }
-        cameraView.initCamera()
-
         nativeLib.start()
     }
 

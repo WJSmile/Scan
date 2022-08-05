@@ -8,7 +8,6 @@
 
 struct ImageData {
     jbyte *data = 0;
-    long length = 0;
     int width = 0;
     int height = 0;
 };

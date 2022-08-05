@@ -5,14 +5,14 @@
 #include "JavaCallHelper.h"
 #include "Utils.h"
 
-void JavaCallHelper::callBackBitMap(cv::Mat mat) {
+void JavaCallHelper::callBackBitMap(cv::Mat &mat) {
     java_vm->AttachCurrentThread(&env, nullptr);
     env->CallVoidMethod(callback, javaCallbackId, Utils::mat_to_bitmap(env, mat, false));
     java_vm->DetachCurrentThread();
 }
 
 void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
-    if (java_vm == nullptr || javaCallbackId == nullptr || point_call_back == nullptr) {
+    if (java_vm == nullptr  || point_call_back == nullptr) {
         return;
     }
     java_vm->AttachCurrentThread(&env, nullptr);
@@ -24,6 +24,11 @@ void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
     jmethodID list_add_mid = env->GetMethodID(java_list_class, "add", "(Ljava/lang/Object;)Z");
 
     jobject new_list = env->NewObject(java_list_class, list_mid);
+
+    if (qrCodes.empty()){
+        env->CallVoidMethod(point_call_back, javaCallbackOnPointId, new_list);
+        return;
+    }
 
 
     jmethodID qrcode_mid = env->GetMethodID((jclass) java_qrcode_class,

@@ -20,9 +20,18 @@ using namespace barcode;
 
 class Distinguish : public XThread {
 public:
-    Distinguish(const string& detect_prototxt,const string& detect_caffe_model,  const string& sr_prototxt,const string& sr_caffe_model );
+    Distinguish(const string &detect_prototxt, const string &detect_caffe_model,
+                const string &sr_prototxt, const string &sr_caffe_model);
 
-    virtual void setImageData(ImageData* image);
+    virtual jbyte *yuvToNV21(jbyteArray yBuf, jbyteArray uBuf, jbyteArray vBuf,
+                             int width, int height, int yRowStride, int yPixelStride,
+                             int uRowStride,
+                             int uPixelStride, int vRowStride, int vPixelStride, JNIEnv *env);
+
+    virtual void setImageData(ImageData *imageData);
+
+
+    virtual jbyteArray getByteArray(JNIEnv *env, jobject buffer);
 
     virtual CodeBean scan(Mat &qrcode_mat);
 
@@ -35,13 +44,13 @@ public:
     virtual void pause(bool is_pause);
 
     bool isPause = false;
-    list<ImageData*> *data;
-    ImageData *imageData ;
+    list<ImageData *> *data;
+    ImageData *imageData;
     ImageScanner *imageScanner;
     Ptr<wechat_qrcode::WeChatQRCode> detector;
     Ptr<BarcodeDetector> brcodeDetector;
     std::mutex mux;
-    JavaCallHelper* javaCallHelper;
+    JavaCallHelper *javaCallHelper;
 
     virtual void release();
 

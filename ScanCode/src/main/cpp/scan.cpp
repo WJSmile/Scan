@@ -56,8 +56,8 @@ void SetDistinguishFromObj(JNIEnv *env, jobject obj, jlong jlong1) {
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_palmpay_scan_code_NativeLib_initScan(JNIEnv *env, jobject thiz, jstring detect_proto_txt,
-                                         jstring detect_caffe_model, jstring sr_proto_txt,
-                                         jstring sr_caffe_model) {
+                                              jstring detect_caffe_model, jstring sr_proto_txt,
+                                              jstring sr_caffe_model) {
     const char *_detect_proto_txt = env->GetStringUTFChars(detect_proto_txt, nullptr);
 
 
@@ -88,7 +88,7 @@ Java_com_palmpay_scan_code_NativeLib_initScan(JNIEnv *env, jobject thiz, jstring
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_palmpay_scan_code_NativeLib_setImageByte(JNIEnv *env, jobject thiz, jbyteArray bytes,
-                                             jint width, jint height) {
+                                                  jint width, jint height) {
     if (distinguish != nullptr && !distinguish->signOut) {
 
         auto *imageData = new ImageData();
@@ -101,6 +101,31 @@ Java_com_palmpay_scan_code_NativeLib_setImageByte(JNIEnv *env, jobject thiz, jby
     }
 }
 
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_palmpay_scan_code_NativeLib_setImageYuvByte(JNIEnv *env, jobject thiz, jobject y_bytes,
+                                                     jobject u_bytes, jobject v_bytes,
+                                                     jint y_row_stride, jint y_pixel_stride,
+                                                     jint u_row_stride, jint u_pixel_stride,
+                                                     jint v_row_stride, jint v_pixel_stride,
+                                                     jint width, jint height) {
+    if (distinguish != nullptr && !distinguish->signOut) {
+
+        auto *imageData = new ImageData();
+        imageData->data = distinguish->yuvToNV21(distinguish->getByteArray(env, y_bytes),
+                                                 distinguish->getByteArray(env, y_bytes),
+                                                 distinguish->getByteArray(env, y_bytes), width,
+                                                 height,
+                                                 y_row_stride, y_pixel_stride, u_row_stride,
+                                                 u_pixel_stride, v_row_stride, v_pixel_stride, env);
+        imageData->height = height;
+        imageData->width = width;
+        distinguish->setImageData(imageData);
+    }
+}
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_palmpay_scan_code_NativeLib_start(JNIEnv *env, jobject thiz) {
@@ -132,7 +157,7 @@ Java_com_palmpay_scan_code_NativeLib_pause(JNIEnv *env, jobject thiz, jboolean i
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_palmpay_scan_code_NativeLib_setBitMapCallBack(JNIEnv *env, jobject thiz,
-                                                  jobject callback) {
+                                                       jobject callback) {
     if (distinguish == nullptr) {
         return;
     }
@@ -153,7 +178,7 @@ Java_com_palmpay_scan_code_NativeLib_setBitMapCallBack(JNIEnv *env, jobject thiz
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_palmpay_scan_code_NativeLib_setPointCallBack(JNIEnv *env, jobject thiz,
-                                                 jobject point_call_back) {
+                                                      jobject point_call_back) {
     if (distinguish == nullptr) {
         return;
     }

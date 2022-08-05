@@ -55,13 +55,15 @@ class CameraView @JvmOverloads constructor(
         imageAnalysis.setAnalyzer(executorService) { imageProxy ->
             analyzerListener?.invoke(imageProxy)
         }
+        initCamera()
     }
 
-    fun initCamera() {
+    private fun initCamera() {
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
 
             preview.setSurfaceProvider(previewView.surfaceProvider)
+
 
             camera = cameraProvider.bindToLifecycle(
                 (context as FragmentActivity),

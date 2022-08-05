@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
+import android.util.Log;
 
 import androidx.camera.core.ImageProxy;
 
@@ -12,6 +13,34 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
 public class Utils {
+
+
+    public static byte[] bytebuffer2ByteArray(ByteBuffer buffer) {
+        //重置 limit 和postion 值
+        buffer.flip();
+        //获取buffer中有效大小
+        int len=buffer.limit() - buffer.position();
+
+        byte [] bytes=new byte[len];
+
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i]=buffer.get();
+
+        }
+
+        return bytes;
+    }
+
+    public static byte[] convertPlanes2NV21(int width, int height, ByteBuffer yPlane, ByteBuffer uPlane, ByteBuffer vPlane) {
+        int totalSize = width * height * 3 / 2;
+        byte[] nv21Buffer = new byte[totalSize];
+        int len = yPlane.capacity();
+        yPlane.get(nv21Buffer, 0, len);
+        vPlane.get(nv21Buffer, len, vPlane.capacity());
+        byte lastValue = uPlane.get(uPlane.capacity() - 1);
+        nv21Buffer[totalSize - 1] = lastValue;
+        return nv21Buffer;
+    }
 
     public static  byte[]  yuv420ThreePlanesToNV21(
             ImageProxy.PlaneProxy[] yuv420888planes, int width, int height) {
@@ -68,7 +97,7 @@ public class Utils {
      *
      * 输入平面数据将被复制到“out”中，从“offset”开始，每个像素将被“pixelStride”隔开。 请注意，输出上没有行填充。
      */
-    private static void unpackPlane( ImageProxy.PlaneProxy plane, int width, int height, byte[] out, int offset, int pixelStride) {
+    private static void unpackPlane(ImageProxy.PlaneProxy plane, int width, int height, byte[] out, int offset, int pixelStride) {
         ByteBuffer buffer = plane.getBuffer();
         buffer.rewind();
 

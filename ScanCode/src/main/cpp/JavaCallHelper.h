@@ -23,7 +23,7 @@ struct CodeBean {
 class JavaCallHelper {
 public:
     JavaCallHelper();
-    virtual void callBackBitMap(cv::Mat mat);
+    virtual void callBackBitMap(cv::Mat &mat);
 
     virtual void callBackOnPoint(std::vector<CodeBean> &qrCodeBean);
 
