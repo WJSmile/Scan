@@ -12,7 +12,7 @@ void JavaCallHelper::callBackBitMap(cv::Mat &mat) {
 }
 
 void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
-    if (java_vm == nullptr  || point_call_back == nullptr) {
+    if (java_vm == nullptr || point_call_back == nullptr) {
         return;
     }
     java_vm->AttachCurrentThread(&env, nullptr);
@@ -25,8 +25,9 @@ void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
 
     jobject new_list = env->NewObject(java_list_class, list_mid);
 
-    if (qrCodes.empty()){
+    if (qrCodes.empty()) {
         env->CallVoidMethod(point_call_back, javaCallbackOnPointId, new_list);
+        java_vm->DetachCurrentThread();
         return;
     }
 
@@ -73,16 +74,26 @@ void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
     java_vm->DetachCurrentThread();
 }
 
-void JavaCallHelper::release() {
-    javaCallbackId = nullptr;
-    javaCallbackOnPointId = nullptr;
-    java_qrcode_class = nullptr;
-    point_call_back = nullptr;
-    callback = nullptr;
-    env = nullptr;
-    java_vm = nullptr;
-}
 
 JavaCallHelper::JavaCallHelper() {
 
+}
+
+void JavaCallHelper::release(JNIEnv *env) {
+    javaCallbackId = nullptr;
+    javaCallbackOnPointId = nullptr;
+
+    if (java_qrcode_class != nullptr) {
+        env->DeleteGlobalRef(java_qrcode_class);
+    }
+    java_qrcode_class = nullptr;
+
+    if (point_call_back != nullptr) {
+        env->DeleteGlobalRef(point_call_back);
+    }
+    point_call_back = nullptr;
+    if (callback != nullptr) {
+        env->DeleteGlobalRef(callback);
+    }
+    callback = nullptr;
 }

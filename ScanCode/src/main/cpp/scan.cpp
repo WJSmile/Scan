@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <string>
 #include "Distinguish.h"
+#include "Utils.h"
 #include "XLog.h"
 
 Distinguish *distinguish;
@@ -102,30 +103,6 @@ Java_com_palmpay_scan_code_NativeLib_setImageByte(JNIEnv *env, jobject thiz, jby
 }
 
 
-
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_palmpay_scan_code_NativeLib_setImageYuvByte(JNIEnv *env, jobject thiz, jobject y_bytes,
-                                                     jobject u_bytes, jobject v_bytes,
-                                                     jint y_row_stride, jint y_pixel_stride,
-                                                     jint u_row_stride, jint u_pixel_stride,
-                                                     jint v_row_stride, jint v_pixel_stride,
-                                                     jint width, jint height) {
-    if (distinguish != nullptr && !distinguish->signOut) {
-
-        auto *imageData = new ImageData();
-        imageData->data = distinguish->yuvToNV21(distinguish->getByteArray(env, y_bytes),
-                                                 distinguish->getByteArray(env, y_bytes),
-                                                 distinguish->getByteArray(env, y_bytes), width,
-                                                 height,
-                                                 y_row_stride, y_pixel_stride, u_row_stride,
-                                                 u_pixel_stride, v_row_stride, v_pixel_stride, env);
-        imageData->height = height;
-        imageData->width = width;
-        distinguish->setImageData(imageData);
-    }
-}
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_palmpay_scan_code_NativeLib_start(JNIEnv *env, jobject thiz) {
@@ -139,7 +116,7 @@ Java_com_palmpay_scan_code_NativeLib_start(JNIEnv *env, jobject thiz) {
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_palmpay_scan_code_NativeLib_stop(JNIEnv *env, jobject thiz) {
-    distinguish->release();
+    distinguish->release(env);
     SetDistinguishFromObj(env, thiz, -1);
     delete distinguish;
     distinguish = nullptr;
@@ -172,6 +149,8 @@ Java_com_palmpay_scan_code_NativeLib_setBitMapCallBack(JNIEnv *env, jobject thiz
     distinguish->javaCallHelper->javaCallbackId = javaCallbackId;
     distinguish->javaCallHelper->callback = g_callback;
 
+    env->DeleteLocalRef(javaClass);
+
 
 }
 
@@ -194,4 +173,7 @@ Java_com_palmpay_scan_code_NativeLib_setPointCallBack(JNIEnv *env, jobject thiz,
     distinguish->javaCallHelper->javaCallbackOnPointId = javaCallbackOnPointId;
     distinguish->javaCallHelper->point_call_back = g_callback;
     distinguish->javaCallHelper->java_qrcode_class = env->NewGlobalRef(java_code_class);
+
+    env->DeleteLocalRef(java_code_class);
+    env->DeleteLocalRef(javaClass);
 }

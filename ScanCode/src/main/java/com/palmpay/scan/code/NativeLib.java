@@ -14,12 +14,6 @@ public class NativeLib {
 
     public native void setImageByte(byte[] bytes, int width, int height);
 
-    public native void setImageYuvByte(ByteBuffer yBytes, ByteBuffer uBytes, ByteBuffer vBytes,
-                                       int yRowStride, int yPixelStride,
-                                       int uRowStride, int uPixelStride,
-                                       int vRowStride, int vPixelStride,
-                                       int width, int height);
-
     public native void start();
 
     public native void stop();

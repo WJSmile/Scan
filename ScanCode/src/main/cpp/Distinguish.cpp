@@ -20,6 +20,9 @@ void Distinguish::Main() {
         Mat src(imageData->height + imageData->height / 2,
                 imageData->width, CV_8UC1,
                 (uchar *) imageData->data);
+        Mat mat;
+        cvtColor(src, mat, COLOR_YUV2RGBA_NV21);
+        rotate(mat, mat, ROTATE_90_CLOCKWISE);
 
         cvtColor(src, src, COLOR_YUV2GRAY_420);
         rotate(src, src, ROTATE_90_CLOCKWISE);
@@ -29,15 +32,16 @@ void Distinguish::Main() {
         getBarCode(src, qrCodes);
 
         if (javaCallHelper != nullptr) {
-
-            javaCallHelper->callBackOnPoint(qrCodes);
-            //   javaCallHelper->callBackBitMap(src);
+            if (!qrCodes.empty()) {
+             //   javaCallHelper->callBackBitMap(mat);
+                javaCallHelper->callBackOnPoint(qrCodes);
+            }
         }
 
         qrCodes.clear();
         src.release();
-        delete imageData->data;
-        delete imageData;
+        mat.release();
+        imageData = nullptr;
     }
     signOut = true;
 }
@@ -141,7 +145,7 @@ void Distinguish::getQrCode(Mat &src, vector<CodeBean> &codeBeans) {
     }
 }
 
-void Distinguish::release() {
+void Distinguish::release(JNIEnv *env) {
     Stop();
     mux.lock();
     data->clear();
@@ -152,8 +156,10 @@ void Distinguish::release() {
     }
     delete data;
     data = nullptr;
-
-    imageData = nullptr;
+    if (imageData != nullptr) {
+        delete imageData;
+        imageData = nullptr;
+    }
 
     delete imageScanner;
     imageScanner = nullptr;
@@ -164,7 +170,7 @@ void Distinguish::release() {
     brcodeDetector.release();
     detector = nullptr;
 
-    javaCallHelper->release();
+    javaCallHelper->release(env);
     delete javaCallHelper;
     javaCallHelper = nullptr;
 }
@@ -176,7 +182,7 @@ Distinguish::Distinguish(const string &detect_prototxt, const string &detect_caf
     signOut = false;
     isPause = false;
     data = new list<ImageData *>();
-    imageData = new ImageData();
+    imageData = nullptr;
     javaCallHelper = new JavaCallHelper();
     imageScanner = new ImageScanner();
     imageScanner->set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
@@ -193,85 +199,12 @@ void Distinguish::pause(bool is_pause) {
     mux.unlock();
 }
 
-jbyte *
-Distinguish::yuvToNV21(jbyteArray yBuf, jbyteArray uBuf, jbyteArray vBuf,
-                       int width, int height, int yRowStride, int yPixelStride, int uRowStride,
-                       int uPixelStride, int vRowStride, int vPixelStride, JNIEnv *env) {
-
-    /* Check that our frame has right format, as specified at android docs for
-     * YUV_420_888 (https://developer.android.com/reference/android/graphics/ImageFormat?authuser=2#YUV_420_888):
-     *      - Plane Y not overlaped with UV, and always with pixelStride = 1
-     *      - Planes U and V have the same rowStride and pixelStride (overlaped or not)
-     */
-    if (yPixelStride != 1 || uPixelStride != vPixelStride || uRowStride != vRowStride) {
-        jclass Exception = env->FindClass("java/lang/Exception");
-        env->ThrowNew(Exception,
-                      "Invalid YUV_420_888 byte structure. Not agree with https://developer.android.com/reference/android/graphics/ImageFormat?authuser=2#YUV_420_888");
-    }
-    jbyte *fullArrayNV21;
-    int ySize = width * height;
-    int uSize = env->GetArrayLength(uBuf);
-    int vSize = env->GetArrayLength(vBuf);
-    int newArrayPosition = 0; //Posicion por la que vamos rellenando el array NV21
-
-    fullArrayNV21 = new jbyte[ySize + uSize + vSize];
-
-    if (yRowStride == width) {
-        //Best case. No padding, copy direct
-        env->GetByteArrayRegion(yBuf, newArrayPosition, ySize, fullArrayNV21);
-        newArrayPosition = ySize;
-    } else {
-        // Padding at plane Y. Copy Row by Row
-        long yPlanePosition = 0;
-        for (; newArrayPosition < ySize; newArrayPosition += width) {
-            env->GetByteArrayRegion(yBuf, yPlanePosition, width, fullArrayNV21 + newArrayPosition);
-            yPlanePosition += yRowStride;
-        }
-    }
-
-    // Check UV channels in order to know if they are overlapped (best case)
-    // If they are overlapped, U and B first bytes are consecutives and pixelStride = 2
-    long uMemoryAdd = (long) &uBuf;
-    long vMemoryAdd = (long) &vBuf;
-    long diff = std::abs(uMemoryAdd - vMemoryAdd);
-    if (vPixelStride == 2 && diff == 8) {
-        if (width == vRowStride) {
-            // Best Case: Valid NV21 representation (UV overlapped, no padding). Copy direct
-            env->GetByteArrayRegion(uBuf, 0, uSize, fullArrayNV21 + ySize);
-            env->GetByteArrayRegion(vBuf, 0, vSize, fullArrayNV21 + ySize + uSize);
-        } else {
-            // UV overlapped, but with padding. Copy row by row (too much performance improvement compared with copy byte-by-byte)
-            int limit = height / 2 - 1;
-            for (int row = 0; row < limit; row++) {
-                env->GetByteArrayRegion(uBuf, row * vRowStride, width,
-                                        fullArrayNV21 + ySize + (row * width));
-            }
-        }
-    } else {
-        //WORST: not overlapped UV. Copy byte by byte
-        for (int row = 0; row < height / 2; row++) {
-            for (int col = 0; col < width / 2; col++) {
-                int vuPos = col * uPixelStride + row * uRowStride;
-                env->GetByteArrayRegion(vBuf, vuPos, 1, fullArrayNV21 + newArrayPosition);
-                newArrayPosition++;
-                env->GetByteArrayRegion(uBuf, vuPos, 1, fullArrayNV21 + newArrayPosition);
-                newArrayPosition++;
-            }
-        }
-    }
-    env->DeleteLocalRef(yBuf);
-    env->DeleteLocalRef(uBuf);
-    env->DeleteLocalRef(vBuf);
-    return fullArrayNV21;
-}
-
 
 void Distinguish::setImageData(ImageData *image) {
     mux.lock();
     if (data != nullptr && data->empty() && !isExit) {
         data->push_back(image);
     } else {
-        delete image->data;
         delete image;
     }
     mux.unlock();
@@ -279,17 +212,8 @@ void Distinguish::setImageData(ImageData *image) {
 
 
 
-jbyteArray Distinguish::getByteArray(JNIEnv *env, jobject buffer) {
-    auto *pData = (jbyte *) env->GetDirectBufferAddress(buffer);   //获取buffer数据首地址
-    jlong dwCapacity = env->GetDirectBufferCapacity(buffer);         //获取buffer的容量
-    if (!pData) {
-        XLOGE("GetDirectBufferAddress() return null");
-        return nullptr;
-    }
-    jbyteArray data = env->NewByteArray(dwCapacity);                  //创建与buffer容量一样的byte[]
-    env->SetByteArrayRegion(data, 0, dwCapacity, pData);              //数据拷贝到data中
-    return data;
-}
+
+
 
 
 

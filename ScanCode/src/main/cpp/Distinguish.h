@@ -23,15 +23,10 @@ public:
     Distinguish(const string &detect_prototxt, const string &detect_caffe_model,
                 const string &sr_prototxt, const string &sr_caffe_model);
 
-    virtual jbyte *yuvToNV21(jbyteArray yBuf, jbyteArray uBuf, jbyteArray vBuf,
-                             int width, int height, int yRowStride, int yPixelStride,
-                             int uRowStride,
-                             int uPixelStride, int vRowStride, int vPixelStride, JNIEnv *env);
+
 
     virtual void setImageData(ImageData *imageData);
 
-
-    virtual jbyteArray getByteArray(JNIEnv *env, jobject buffer);
 
     virtual CodeBean scan(Mat &qrcode_mat);
 
@@ -52,7 +47,7 @@ public:
     std::mutex mux;
     JavaCallHelper *javaCallHelper;
 
-    virtual void release();
+    virtual void release(JNIEnv *env);
 
     bool signOut = false;
 

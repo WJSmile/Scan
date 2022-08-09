@@ -1,125 +1,86 @@
 package com.palmpay.scan.utils;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
-import android.graphics.YuvImage;
-import android.util.Log;
+import android.media.Image;
 
 import androidx.camera.core.ImageProxy;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.ReadOnlyBufferException;
 
 public class Utils {
 
 
-    public static byte[] bytebuffer2ByteArray(ByteBuffer buffer) {
-        //重置 limit 和postion 值
-        buffer.flip();
-        //获取buffer中有效大小
-        int len=buffer.limit() - buffer.position();
+    public static byte[] YUV_420_888toNV21(ImageProxy image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int ySize = width * height;
+        int uvSize = width * height / 4;
 
-        byte [] bytes=new byte[len];
+        byte[] nv21 = new byte[ySize + uvSize * 2];
 
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i]=buffer.get();
+        ByteBuffer yBuffer = image.getPlanes()[0].getBuffer(); // Y
+        ByteBuffer uBuffer = image.getPlanes()[1].getBuffer(); // U
+        ByteBuffer vBuffer = image.getPlanes()[2].getBuffer(); // V
 
-        }
+        int rowStride = image.getPlanes()[0].getRowStride();
+        assert (image.getPlanes()[0].getPixelStride() == 1);
 
-        return bytes;
-    }
+        int pos = 0;
 
-    public static byte[] convertPlanes2NV21(int width, int height, ByteBuffer yPlane, ByteBuffer uPlane, ByteBuffer vPlane) {
-        int totalSize = width * height * 3 / 2;
-        byte[] nv21Buffer = new byte[totalSize];
-        int len = yPlane.capacity();
-        yPlane.get(nv21Buffer, 0, len);
-        vPlane.get(nv21Buffer, len, vPlane.capacity());
-        byte lastValue = uPlane.get(uPlane.capacity() - 1);
-        nv21Buffer[totalSize - 1] = lastValue;
-        return nv21Buffer;
-    }
-
-    public static  byte[]  yuv420ThreePlanesToNV21(
-            ImageProxy.PlaneProxy[] yuv420888planes, int width, int height) {
-        int imageSize = width * height;
-        byte[] out = new byte[imageSize + 2 * (imageSize / 4)];
-
-        if (areUVPlanesNV21(yuv420888planes, width, height)) {
-            // 复制 Y 的值
-            yuv420888planes[0].getBuffer().get(out, 0, imageSize);
-            // 从 V 缓冲区获取第一个 V 值，因为 U 缓冲区不包含它。
-            yuv420888planes[2].getBuffer().get(out, imageSize, 1);
-            // 从 U 缓冲区复制第一个 U 值和剩余的 VU 值。
-            yuv420888planes[1].getBuffer().get(out, imageSize + 1, 2 * imageSize / 4 - 1);
+        if (rowStride == width) { // likely
+            yBuffer.get(nv21, 0, ySize);
+            pos += ySize;
         } else {
-            // 回退到一个一个地复制 UV 值，这更慢但也有效。
-            // 取 Y.
-            unpackPlane(yuv420888planes[0], width, height, out, 0, 1);
-            // 取 U.
-            unpackPlane(yuv420888planes[1], width, height, out, imageSize + 1, 2);
-            // 取 V.
-            unpackPlane(yuv420888planes[2], width, height, out, imageSize, 2);
-        }
-
-        return out;
-    }
-
-    private static boolean areUVPlanesNV21( ImageProxy.PlaneProxy[]  planes, int width, int height) {
-        int imageSize = width * height;
-
-        ByteBuffer uBuffer = planes[1].getBuffer();
-        ByteBuffer vBuffer = planes[2].getBuffer();
-
-        // 备份缓冲区属性。
-        int vBufferPosition = vBuffer.position();
-        int uBufferLimit = uBuffer.limit();
-
-        // 将 V 缓冲区推进 1 个字节，因为 U 缓冲区将不包含第一个 V 值。
-        vBuffer.position(vBufferPosition + 1);
-        // 切掉 U 缓冲区的最后一个字节，因为 V 缓冲区将不包含最后一个 U 值。
-        uBuffer.limit(uBufferLimit - 1);
-
-        // 检查缓冲区是否相等并具有预期的元素数量。
-        boolean areNV21 = (vBuffer.remaining() == (2 * imageSize / 4 - 2)) && (vBuffer.compareTo(uBuffer) == 0);
-
-        // 将缓冲区恢复到初始状态。
-        vBuffer.position(vBufferPosition);
-        uBuffer.limit(uBufferLimit);
-
-        return areNV21;
-    }
-
-    /**
-     * 将图像平面解压缩为字节数组。
-     *
-     * 输入平面数据将被复制到“out”中，从“offset”开始，每个像素将被“pixelStride”隔开。 请注意，输出上没有行填充。
-     */
-    private static void unpackPlane(ImageProxy.PlaneProxy plane, int width, int height, byte[] out, int offset, int pixelStride) {
-        ByteBuffer buffer = plane.getBuffer();
-        buffer.rewind();
-
-        // 计算当前平面的大小。假设它的纵横比与原始图像相同。
-        int numRow = (buffer.limit() + plane.getRowStride() - 1) / plane.getRowStride();
-        if (numRow == 0) {
-            return;
-        }
-        int scaleFactor = height / numRow;
-        int numCol = width / scaleFactor;
-
-        // 提取输出缓冲区中的数据。
-        int outputPos = offset;
-        int rowStart = 0;
-        for (int row = 0; row < numRow; row++) {
-            int inputPos = rowStart;
-            for (int col = 0; col < numCol; col++) {
-                out[outputPos] = buffer.get(inputPos);
-                outputPos += pixelStride;
-                inputPos += plane.getPixelStride();
+            int yBufferPos = -rowStride; // not an actual position
+            for (; pos < ySize; pos += width) {
+                yBufferPos += rowStride;
+                yBuffer.position(yBufferPos);
+                yBuffer.get(nv21, pos, width);
             }
-            rowStart += plane.getRowStride();
         }
+
+        rowStride = image.getPlanes()[2].getRowStride();
+        int pixelStride = image.getPlanes()[2].getPixelStride();
+
+        assert (rowStride == image.getPlanes()[1].getRowStride());
+        assert (pixelStride == image.getPlanes()[1].getPixelStride());
+
+        if (pixelStride == 2 && rowStride == width && uBuffer.get(0) == vBuffer.get(1)) {
+            // maybe V an U planes overlap as per NV21, which means vBuffer[1] is alias of uBuffer[0]
+            byte savePixel = vBuffer.get(1);
+            try {
+                vBuffer.put(1, (byte) ~savePixel);
+                if (uBuffer.get(0) == (byte) ~savePixel) {
+                    vBuffer.put(1, savePixel);
+                    vBuffer.position(0);
+                    uBuffer.position(0);
+                    vBuffer.get(nv21, ySize, 1);
+                    uBuffer.get(nv21, ySize + 1, uBuffer.remaining());
+
+                    return nv21; // shortcut
+                }
+            } catch (ReadOnlyBufferException ex) {
+                // unfortunately, we cannot check if vBuffer and uBuffer overlap
+            }
+
+            // unfortunately, the check failed. We must save U and V pixel by pixel
+            vBuffer.put(1, savePixel);
+        }
+
+        // other optimizations could check if (pixelStride == 1) or (pixelStride == 2),
+        // but performance gain would be less significant
+
+        for (int row = 0; row < height / 2; row++) {
+            for (int col = 0; col < width / 2; col++) {
+                int vuPos = col * pixelStride + row * rowStride;
+                nv21[pos++] = vBuffer.get(vuPos);
+                nv21[pos++] = uBuffer.get(vuPos);
+            }
+        }
+
+        return nv21;
     }
+
 }

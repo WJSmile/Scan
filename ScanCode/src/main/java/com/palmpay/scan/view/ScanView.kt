@@ -22,7 +22,6 @@ class ScanView @JvmOverloads constructor(
     private val cameraView: CameraView
     private val nativeLib: NativeLib = NativeLib()
     private val codePointView: CodePointView
-
     private val imageView: ImageView
 
     init {
@@ -39,18 +38,8 @@ class ScanView @JvmOverloads constructor(
         initWeChatModel()
 
         cameraView.setOnAnalyzerListener {
-            nativeLib.setImageYuvByte(
-                it.planes[0].buffer,
-                it.planes[1].buffer,
-                it.planes[2].buffer,
-                it.planes[0].rowStride,
-                it.planes[0].pixelStride,
-                it.planes[1].rowStride,
-                it.planes[1].pixelStride,
-                it.planes[2].rowStride,
-                it.planes[2].pixelStride,
-                it.width,
-                it.height
+            nativeLib.setImageByte(
+                Utils.YUV_420_888toNV21(it), it.width, it.height
             )
             it.close()
         }
@@ -66,20 +55,12 @@ class ScanView @JvmOverloads constructor(
                 val lifecycle: Lifecycle = (context as FragmentActivity).lifecycle
                 if (lifecycle is LifecycleRegistry) {
                     context.runOnUiThread {
-                        lifecycle.addObserver(CameraLifecycleObserver())
                         lifecycle.currentState = Lifecycle.State.CREATED
                     }
                 }
+                nativeLib.pause(true)
             }
             codePointView.setQrCodes(it)
-        }
-    }
-
-    inner class CameraLifecycleObserver : LifecycleObserver {
-
-        @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-        fun onCreated() {
-            nativeLib.pause(true)
         }
     }
 
@@ -91,6 +72,7 @@ class ScanView @JvmOverloads constructor(
 
     fun stop() {
         nativeLib.stop()
+        cameraView.release()
     }
 
 

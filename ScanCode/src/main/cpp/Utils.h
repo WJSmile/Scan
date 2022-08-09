@@ -12,7 +12,9 @@
 
 class Utils {
 public:
-   static  jobject mat_to_bitmap(JNIEnv *env, cv::Mat &src, bool needPremultiplyAlpha);
+    static jobject mat_to_bitmap(JNIEnv *env, cv::Mat &src, bool needPremultiplyAlpha);
+
+
 };
 
 

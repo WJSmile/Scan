@@ -27,7 +27,8 @@ public:
 
     virtual void callBackOnPoint(std::vector<CodeBean> &qrCodeBean);
 
-    virtual void release();
+
+    virtual void release( JNIEnv *env);
 
     jmethodID javaCallbackId;
     jobject callback;

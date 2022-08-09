@@ -71,12 +71,17 @@ class CameraView @JvmOverloads constructor(
                 imageAnalysis,
                 preview
             )
+
         }, ContextCompat.getMainExecutor(context))
     }
 
 
     fun setOnAnalyzerListener(action: (ImageProxy) -> Unit) {
         this.analyzerListener = action
+    }
+
+    fun release(){
+        cameraProviderFuture.get().unbindAll()
     }
 
 }
