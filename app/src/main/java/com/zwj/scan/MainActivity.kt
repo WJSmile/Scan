@@ -1,6 +1,7 @@
 package com.zwj.scan
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.gyf.immersionbar.ImmersionBar
 import com.palmpay.scan.view.ScanView
@@ -17,6 +18,7 @@ class MainActivity : AppCompatActivity() {
         scanView = findViewById(R.id.scan_view)
         scanView.setOnCodeResultListener {
             if (it.size == 1) {
+                Log.e(">>>>>>", it[0].code)
                 finish()
             }
         }

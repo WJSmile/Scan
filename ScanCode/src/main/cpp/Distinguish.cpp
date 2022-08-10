@@ -33,7 +33,6 @@ void Distinguish::Main() {
 
         if (javaCallHelper != nullptr) {
             if (!qrCodes.empty()) {
-             //   javaCallHelper->callBackBitMap(mat);
                 javaCallHelper->callBackOnPoint(qrCodes);
             }
         }
@@ -123,7 +122,7 @@ void Distinguish::getQrCode(Mat &src, vector<CodeBean> &codeBeans) {
         return;
     }
     vector<Mat> vPoints;
-    vector<String> strDecoded;
+    vector<string> strDecoded;
     strDecoded = detector->detectAndDecode(src, vPoints);
     for (int i = 0; i < strDecoded.size(); ++i) {
         CodeBean codeBean;

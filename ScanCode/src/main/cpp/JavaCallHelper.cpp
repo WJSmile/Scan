@@ -4,6 +4,7 @@
 
 #include "JavaCallHelper.h"
 #include "Utils.h"
+#include <iostream>
 
 void JavaCallHelper::callBackBitMap(cv::Mat &mat) {
     java_vm->AttachCurrentThread(&env, nullptr);
@@ -61,8 +62,9 @@ void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
         jobject center = env->NewObject(java_PointF_class, PointFInitMid, qrCode.center.x,
                                         qrCode.center.y);
 
+
         jobject new_qrcode = env->NewObject((jclass) java_qrcode_class, qrcode_mid, new_rect,
-                                            env->NewStringUTF(qrCode.code.data()), qrCode.type,
+                                            stringToUtf8(qrCode.code.data()), qrCode.type,
                                             topLeft, bottomLeft, bottomRight, topRight, center);
 
         env->CallBooleanMethod(new_list, list_add_mid, new_qrcode);
@@ -99,3 +101,25 @@ void JavaCallHelper::release(JNIEnv *env) {
     callback = nullptr;
     java_vm = nullptr;
 }
+
+jstring JavaCallHelper::stringToUtf8(const char *filename) {
+    jobject bb = env->NewDirectByteBuffer((void *) filename, strlen(filename));
+
+    jclass cls_Charset = env->FindClass("java/nio/charset/Charset");
+    jmethodID mid_Charset_forName = env->GetStaticMethodID(cls_Charset, "forName",
+                                                           "(Ljava/lang/String;)Ljava/nio/charset/Charset;");
+    jobject charset = env->CallStaticObjectMethod(cls_Charset, mid_Charset_forName,
+                                                  env->NewStringUTF("UTF-8"));
+
+    jmethodID mid_Charset_decode = env->GetMethodID(cls_Charset, "decode",
+                                                    "(Ljava/nio/ByteBuffer;)Ljava/nio/CharBuffer;");
+    jobject cb = env->CallObjectMethod(charset, mid_Charset_decode, bb);
+    env->DeleteLocalRef(bb);
+
+    jclass cls_CharBuffer = env->FindClass("java/nio/CharBuffer");
+    jmethodID mid_CharBuffer_toString = env->GetMethodID(cls_CharBuffer, "toString",
+                                                         "()Ljava/lang/String;");
+   return static_cast<jstring>(env->CallObjectMethod(cb, mid_CharBuffer_toString));
+}
+
+

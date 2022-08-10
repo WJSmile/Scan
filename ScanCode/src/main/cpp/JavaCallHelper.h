@@ -26,7 +26,7 @@ public:
     virtual void callBackBitMap(cv::Mat &mat);
 
     virtual void callBackOnPoint(std::vector<CodeBean> &qrCodeBean);
-
+    virtual jstring stringToUtf8(const char *   filename);
 
     virtual void release( JNIEnv *env);
 
