@@ -76,6 +76,9 @@ Java_com_palmpay_scan_code_NativeLib_initScan(JNIEnv *env, jobject thiz, jstring
     }
 
     distinguish->javaCallHelper->java_vm = java_vm;
+
+    distinguish->Start();
+
     env->ReleaseStringUTFChars(detect_proto_txt, _detect_proto_txt);
 
     env->ReleaseStringUTFChars(detect_caffe_model, _detect_caffe_model);
@@ -91,7 +94,6 @@ JNIEXPORT void JNICALL
 Java_com_palmpay_scan_code_NativeLib_setImageByte(JNIEnv *env, jobject thiz, jbyteArray bytes,
                                                   jint width, jint height) {
     if (distinguish != nullptr && !distinguish->signOut) {
-
         auto *imageData = new ImageData();
         jbyte *bytes_ = env->GetByteArrayElements(bytes, nullptr);
         imageData->data = bytes_;
@@ -103,19 +105,10 @@ Java_com_palmpay_scan_code_NativeLib_setImageByte(JNIEnv *env, jobject thiz, jby
 }
 
 
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_palmpay_scan_code_NativeLib_start(JNIEnv *env, jobject thiz) {
-    if (distinguish == nullptr) {
-        return;
-    }
-    distinguish->Start();
-}
-
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_palmpay_scan_code_NativeLib_stop(JNIEnv *env, jobject thiz) {
+Java_com_palmpay_scan_code_NativeLib_release(JNIEnv *env, jobject thiz) {
     distinguish->release(env);
     SetDistinguishFromObj(env, thiz, -1);
     delete distinguish;

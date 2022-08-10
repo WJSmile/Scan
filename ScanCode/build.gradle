@@ -69,7 +69,4 @@ dependencies {
     implementation "androidx.camera:camera-mlkit-vision:${camerax_version}"
     // If you want to additionally use the CameraX Extensions library
     implementation "androidx.camera:camera-extensions:${camerax_version}"
-    implementation 'com.guolindev.permissionx:permissionx:1.6.4'
-    implementation 'com.geyifeng.immersionbar:immersionbar:3.2.2'
-    implementation 'com.geyifeng.immersionbar:immersionbar-ktx:3.2.2'
 }

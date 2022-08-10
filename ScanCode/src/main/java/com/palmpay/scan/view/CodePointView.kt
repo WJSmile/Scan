@@ -11,23 +11,27 @@ import com.palmpay.scan.bean.CodeBean
 class CodePointView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
-    private val paint: Paint = Paint()
+    private val circlePaint: Paint = Paint()
     private val codeBeans: MutableList<CodeBean> = mutableListOf()
 
+    private val textPaint: Paint = Paint()
+
     init {
-        paint.color = Color.RED
-        paint.textSize = 50f
-        paint.style = Paint.Style.FILL
-        paint.strokeWidth = 5f
-        paint.isAntiAlias = true
+        circlePaint.color = Color.parseColor("#2A349A")
+        circlePaint.style = Paint.Style.FILL
+        circlePaint.isAntiAlias = true
+
+        textPaint.textSize = 20f
+        textPaint.color = Color.WHITE
+
     }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
+        canvas?.drawText("取消", 50F, 20F, textPaint)
         for (qrCodeBean in codeBeans) {
-            canvas?.drawCircle(qrCodeBean.center.x, qrCodeBean.center.y, 50F, paint)
+            canvas?.drawCircle(qrCodeBean.center.x, qrCodeBean.center.y, 50F, circlePaint)
         }
-
     }
 
     fun setQrCodes(list: List<CodeBean>) {

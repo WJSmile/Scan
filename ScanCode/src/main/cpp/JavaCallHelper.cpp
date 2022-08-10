@@ -12,7 +12,7 @@ void JavaCallHelper::callBackBitMap(cv::Mat &mat) {
 }
 
 void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
-    if (java_vm == nullptr || point_call_back == nullptr) {
+    if (java_vm == nullptr || point_call_back == nullptr || java_qrcode_class == nullptr) {
         return;
     }
     java_vm->AttachCurrentThread(&env, nullptr);
@@ -76,13 +76,14 @@ void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
 
 
 JavaCallHelper::JavaCallHelper() {
-
+    point_call_back = nullptr;
+    java_qrcode_class = nullptr;
+    callback = nullptr;
 }
 
 void JavaCallHelper::release(JNIEnv *env) {
     javaCallbackId = nullptr;
     javaCallbackOnPointId = nullptr;
-
     if (java_qrcode_class != nullptr) {
         env->DeleteGlobalRef(java_qrcode_class);
     }
@@ -96,4 +97,5 @@ void JavaCallHelper::release(JNIEnv *env) {
         env->DeleteGlobalRef(callback);
     }
     callback = nullptr;
+    java_vm = nullptr;
 }
