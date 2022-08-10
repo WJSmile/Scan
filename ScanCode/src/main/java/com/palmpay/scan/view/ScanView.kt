@@ -15,6 +15,7 @@ import com.palmpay.scan.utils.Utils
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.charset.Charset
 
 class ScanView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -62,6 +63,7 @@ class ScanView @JvmOverloads constructor(
             codePointView.setQrCodes(it)
             onCodeResultListener?.invoke(it)
         }
+
     }
 
     fun setOnCodeResultListener(onCodeResultListener: ((List<CodeBean>) -> Unit)?) {

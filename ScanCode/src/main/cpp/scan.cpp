@@ -163,6 +163,7 @@ Java_com_palmpay_scan_code_NativeLib_setPointCallBack(JNIEnv *env, jobject thiz,
     jmethodID javaCallbackOnPointId = env->GetMethodID(javaClass, "onPoint",
                                                        "(Ljava/util/ArrayList;)V");
 
+
     distinguish->javaCallHelper->javaCallbackOnPointId = javaCallbackOnPointId;
     distinguish->javaCallHelper->point_call_back = g_callback;
     distinguish->javaCallHelper->java_qrcode_class = env->NewGlobalRef(java_code_class);

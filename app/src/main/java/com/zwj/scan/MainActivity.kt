@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.gyf.immersionbar.ImmersionBar
 import com.palmpay.scan.view.ScanView
+import java.nio.charset.Charset
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var scanView: ScanView
@@ -18,7 +20,7 @@ class MainActivity : AppCompatActivity() {
         scanView = findViewById(R.id.scan_view)
         scanView.setOnCodeResultListener {
             if (it.size == 1) {
-                Log.e(">>>>>>", it[0].code)
+                Log.e(">>>>>>", it[0].codeString)
                 finish()
             }
         }

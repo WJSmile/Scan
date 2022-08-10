@@ -28,14 +28,15 @@ void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
 
     if (qrCodes.empty()) {
         env->CallVoidMethod(point_call_back, javaCallbackOnPointId, new_list);
+        env->DeleteLocalRef(new_list);
+        env->DeleteLocalRef(java_list_class);
         java_vm->DetachCurrentThread();
         return;
     }
 
-
     jmethodID qrcode_mid = env->GetMethodID((jclass) java_qrcode_class,
                                             "<init>",
-                                            "(Landroid/graphics/Rect;Ljava/lang/String;ILandroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;)V");
+                                            "(Landroid/graphics/Rect;[BILandroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;)V");
 
     auto java_rect_class = (jclass) env->FindClass("android/graphics/Rect");
     jmethodID rectMid = env->GetMethodID(java_rect_class,
@@ -62,16 +63,25 @@ void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
         jobject center = env->NewObject(java_PointF_class, PointFInitMid, qrCode.center.x,
                                         qrCode.center.y);
 
+        jbyteArray jarray = env->NewByteArray(qrCode.code.length());
+        env->SetByteArrayRegion(jarray, 0, qrCode.code.length(), (jbyte *) qrCode.code.c_str());
 
         jobject new_qrcode = env->NewObject((jclass) java_qrcode_class, qrcode_mid, new_rect,
-                                            stringToUtf8(qrCode.code.data()), qrCode.type,
+                                            jarray, qrCode.type,
                                             topLeft, bottomLeft, bottomRight, topRight, center);
 
         env->CallBooleanMethod(new_list, list_add_mid, new_qrcode);
+
+        env->DeleteLocalRef(jarray);
     }
     qrCodes.clear();
 
     env->CallVoidMethod(point_call_back, javaCallbackOnPointId, new_list);
+
+    env->DeleteLocalRef(new_list);
+    env->DeleteLocalRef(java_list_class);
+    env->DeleteLocalRef(java_rect_class);
+    env->DeleteLocalRef(java_PointF_class);
 
     java_vm->DetachCurrentThread();
 }
@@ -100,26 +110,6 @@ void JavaCallHelper::release(JNIEnv *env) {
     }
     callback = nullptr;
     java_vm = nullptr;
-}
-
-jstring JavaCallHelper::stringToUtf8(const char *filename) {
-    jobject bb = env->NewDirectByteBuffer((void *) filename, strlen(filename));
-
-    jclass cls_Charset = env->FindClass("java/nio/charset/Charset");
-    jmethodID mid_Charset_forName = env->GetStaticMethodID(cls_Charset, "forName",
-                                                           "(Ljava/lang/String;)Ljava/nio/charset/Charset;");
-    jobject charset = env->CallStaticObjectMethod(cls_Charset, mid_Charset_forName,
-                                                  env->NewStringUTF("UTF-8"));
-
-    jmethodID mid_Charset_decode = env->GetMethodID(cls_Charset, "decode",
-                                                    "(Ljava/nio/ByteBuffer;)Ljava/nio/CharBuffer;");
-    jobject cb = env->CallObjectMethod(charset, mid_Charset_decode, bb);
-    env->DeleteLocalRef(bb);
-
-    jclass cls_CharBuffer = env->FindClass("java/nio/CharBuffer");
-    jmethodID mid_CharBuffer_toString = env->GetMethodID(cls_CharBuffer, "toString",
-                                                         "()Ljava/lang/String;");
-   return static_cast<jstring>(env->CallObjectMethod(cb, mid_CharBuffer_toString));
 }
 
 

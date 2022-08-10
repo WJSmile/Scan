@@ -5,7 +5,7 @@ import android.graphics.Rect;
 
 public class CodeBean {
     private Rect rect;
-    private String code;
+    private byte[] code;
     private int type;
     public PointF topLeft;
     public PointF bottomLeft;
@@ -13,7 +13,7 @@ public class CodeBean {
     public PointF topRight;
     public PointF center;
 
-    public CodeBean(Rect rect, String code, int type, PointF topLeft, PointF bottomLeft, PointF bottomRight, PointF topRight, PointF center) {
+    public CodeBean(Rect rect, byte[] code, int type, PointF topLeft, PointF bottomLeft, PointF bottomRight, PointF topRight, PointF center) {
         this.rect = rect;
         this.code = code;
         this.type = type;
@@ -72,11 +72,11 @@ public class CodeBean {
         this.rect = rect;
     }
 
-    public String getCode() {
+    public byte[] getCode() {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(byte[] code) {
         this.code = code;
     }
 
@@ -86,5 +86,12 @@ public class CodeBean {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public String getCodeString() {
+        if (code == null) {
+            return "";
+        }
+        return new String(code);
     }
 }
