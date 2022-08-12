@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.gyf.immersionbar.ImmersionBar
+import com.palmpay.scan.bean.CodeBean
+import com.palmpay.scan.callback.OnScanListener
 import com.palmpay.scan.view.ScanView
 import java.nio.charset.Charset
 
@@ -18,12 +20,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         ImmersionBar.with(this).transparentBar().init()
         scanView = findViewById(R.id.scan_view)
-        scanView.setOnCodeResultListener {
-            if (it.size == 1) {
-                Log.e(">>>>>>", it[0].codeString)
-                finish()
+
+        scanView.setOnScanListener(object :OnScanListener{
+
+            override fun onResult(result: List<CodeBean>) {
             }
-        }
+
+        })
     }
 
     override fun onDestroy() {
