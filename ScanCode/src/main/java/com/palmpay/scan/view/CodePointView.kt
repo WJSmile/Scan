@@ -43,6 +43,29 @@ class CodePointView @JvmOverloads constructor(
     @ColorRes
     var successColorRes: Int = R.color.half_transparent
 
+    private val cancelTextView: TextView
+
+    init {
+        cancelTextView = TextView(context)
+        cancelTextView.text = cancelText
+        cancelTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, cancelTextSize)
+        cancelTextView.setTextColor(context.resources.getColor(cancelColor))
+
+        cancelTextView.setOnClickListener {
+            cancelAction?.invoke()
+            release()
+            for (i in 0 until childCount) {
+                if (i >= 1) {
+                    removeView(getChildAt(i))
+                }
+            }
+            cancelTextView.visibility = View.GONE
+            setBackgroundResource(R.color.transparent)
+        }
+
+        addView(cancelTextView, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
+        cancelTextView.visibility = View.GONE
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -76,21 +99,8 @@ class CodePointView @JvmOverloads constructor(
 
 
     fun setQrCodes(list: List<CodeBean>) {
+        cancelTextView.visibility = View.VISIBLE
         setBackgroundResource(successColorRes)
-
-        val cancelTextView = TextView(context)
-        cancelTextView.text = cancelText
-        cancelTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, cancelTextSize)
-        cancelTextView.setTextColor(context.resources.getColor(cancelColor))
-
-        cancelTextView.setOnClickListener {
-            cancelAction?.invoke()
-            release()
-            removeAllViews()
-            setBackgroundResource(R.color.transparent)
-        }
-
-        addView(cancelTextView, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
 
         for (codeBean in list) {
             val view = View(context)
