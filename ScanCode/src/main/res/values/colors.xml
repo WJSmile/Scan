@@ -2,6 +2,11 @@
 <resources>
     <color name="width">#FFFFFF</color>
     <color name="transparent">#00000000</color>
-    <color name="half_transparent">#CC000000</color>
+    <color name="half_transparent">#B3000000</color>
+    <color name="theme_color">#2A349A</color>
+
+    <color name="scan_line_1">#0D6357FF</color>
+    <color name="scan_line_2">#836357FF</color>
+    <color name="scan_line_3">#FF6357FF</color>
 
 </resources>

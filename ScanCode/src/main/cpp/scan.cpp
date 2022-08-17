@@ -104,6 +104,23 @@ Java_com_palmpay_scan_code_NativeLib_setImageByte(JNIEnv *env, jobject thiz, jby
     }
 }
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_palmpay_scan_code_NativeLib_setImageByteForBox(JNIEnv *env, jobject thiz, jbyteArray bytes,
+                                                        jint width, jint height, jint box_width,
+                                                        jint box_top) {
+    if (distinguish != nullptr && !distinguish->signOut) {
+        auto *imageData = new ImageData();
+        jbyte *bytes_ = env->GetByteArrayElements(bytes, nullptr);
+        imageData->data = bytes_;
+        imageData->height = height;
+        imageData->width = width;
+        imageData->boxTop = box_top;
+        imageData->boxWidth = box_width;
+        distinguish->setImageData(imageData);
+        env->ReleaseByteArrayElements(bytes, bytes_, 0);
+    }
+}
 
 
 extern "C"

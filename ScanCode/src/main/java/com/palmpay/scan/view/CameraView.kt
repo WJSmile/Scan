@@ -1,7 +1,9 @@
 package com.palmpay.scan.view
 
+import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
+import android.util.DisplayMetrics
 import android.util.Size
 import android.widget.FrameLayout
 import androidx.camera.core.*
@@ -40,8 +42,11 @@ class CameraView @JvmOverloads constructor(
     private var analyzerListener: ((ImageProxy) -> Unit)? = null
 
     init {
-        screenWidth = context.resources.displayMetrics.widthPixels
-        screenHeight = context.resources.displayMetrics.heightPixels
+        val dm = DisplayMetrics()
+        (context as Activity).windowManager.defaultDisplay.getRealMetrics(dm)
+        screenWidth = dm.widthPixels
+        screenHeight = dm.heightPixels
+
         previewView = PreviewView(context)
         addView(previewView, LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT))
 

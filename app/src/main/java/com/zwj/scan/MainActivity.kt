@@ -24,6 +24,8 @@ class MainActivity : AppCompatActivity() {
         scanView.setOnScanListener(object :OnScanListener{
 
             override fun onResult(result: List<CodeBean>) {
+                Log.e(">>>>>>",result[0].codeString)
+                finish()
             }
 
         })

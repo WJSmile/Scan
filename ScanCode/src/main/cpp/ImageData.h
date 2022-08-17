@@ -4,12 +4,15 @@
 
 #ifndef SCAN_IMAGEDATA_H
 #define SCAN_IMAGEDATA_H
+
 #include <jni.h>
 
 struct ImageData {
     jbyte *data = 0;
     int width = 0;
     int height = 0;
+    int boxWidth = 0;
+    int boxTop = 0;
 };
 
 

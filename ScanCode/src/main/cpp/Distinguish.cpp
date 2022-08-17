@@ -20,13 +20,19 @@ void Distinguish::Main() {
         Mat src(imageData->height + imageData->height / 2,
                 imageData->width, CV_8UC1,
                 (uchar *) imageData->data);
-        Mat mat;
-        cvtColor(src, mat, COLOR_YUV2RGBA_NV21);
-        rotate(mat, mat, ROTATE_90_CLOCKWISE);
 
         cvtColor(src, src, COLOR_YUV2GRAY_420);
         rotate(src, src, ROTATE_90_CLOCKWISE);
 
+        if (imageData->boxWidth != 0 && imageData->boxTop != 0) {
+
+            Rect rect = Rect(Point((imageData->height - imageData->boxWidth) / 2,
+                                   imageData->boxTop),
+                             Point((imageData->height - imageData->boxWidth) / 2 +
+                                   imageData->boxWidth, imageData->boxTop + imageData->boxWidth));
+
+            src = src(rect);
+        }
 
         getQrCode(src, qrCodes);
         getBarCode(src, qrCodes);
@@ -39,7 +45,6 @@ void Distinguish::Main() {
 
         qrCodes.clear();
         src.release();
-        mat.release();
         imageData = nullptr;
     }
     signOut = true;

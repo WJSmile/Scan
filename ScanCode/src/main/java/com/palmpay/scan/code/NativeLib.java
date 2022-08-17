@@ -14,6 +14,8 @@ public class NativeLib {
 
     public native void setImageByte(byte[] bytes, int width, int height);
 
+    public native void setImageByteForBox(byte[] bytes, int width, int height,int boxWidth,int boxTop);
+
     public native void release();
 
     public native void pause(boolean isPause);
