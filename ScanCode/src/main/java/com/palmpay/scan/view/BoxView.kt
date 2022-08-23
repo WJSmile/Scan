@@ -74,10 +74,7 @@ class BoxView @JvmOverloads constructor(
         } else {
             drawBox(canvas)
         }
-
-
         drawLine(canvas)
-
     }
 
 

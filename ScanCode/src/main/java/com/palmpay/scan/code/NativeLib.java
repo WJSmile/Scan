@@ -1,6 +1,5 @@
 package com.palmpay.scan.code;
 
-import java.nio.ByteBuffer;
 
 public class NativeLib {
 

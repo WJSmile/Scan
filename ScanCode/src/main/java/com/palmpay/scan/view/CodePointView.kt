@@ -4,7 +4,9 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
+import android.graphics.Color
 import android.util.AttributeSet
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
@@ -45,6 +47,8 @@ class CodePointView @JvmOverloads constructor(
 
     private val cancelTextView: TextView
 
+    val scanLineView: ScanLineView
+
     init {
         cancelTextView = TextView(context)
         cancelTextView.text = cancelText
@@ -55,7 +59,7 @@ class CodePointView @JvmOverloads constructor(
             cancelAction?.invoke()
             release()
             for (i in 0 until childCount) {
-                if (i >= 1) {
+                if (i > 1) {
                     removeView(getChildAt(i))
                 }
             }
@@ -65,13 +69,9 @@ class CodePointView @JvmOverloads constructor(
 
         addView(cancelTextView, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
         cancelTextView.visibility = View.GONE
-    }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        for (i in 0 until childCount) {
-            measureChild(getChildAt(i), MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
-        }
+        scanLineView = ScanLineView(context)
+        addView(scanLineView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
     }
 
 
@@ -79,12 +79,25 @@ class CodePointView @JvmOverloads constructor(
         for (i in 0 until childCount) {
             val child = getChildAt(i)
             if (child.tag == null) {
-                child.layout(
-                    cancelLeft,
-                    cancelTop,
-                    cancelLeft + child.measuredWidth,
-                    cancelTop + child.measuredHeight
-                )
+
+                if (i == 0) {
+                    measureChild(child, MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
+                    child.layout(
+                        cancelLeft,
+                        cancelTop,
+                        cancelLeft + child.measuredWidth,
+                        cancelTop + child.measuredHeight
+                    )
+                } else {
+                    measureChild(child, MeasureSpec.AT_MOST, MeasureSpec.AT_MOST)
+                    child.layout(
+                        0,
+                        0,
+                        width,
+                        height
+                    )
+                }
+
             } else {
                 val codeBean: CodeBean = child.tag as CodeBean
                 child.layout(
@@ -136,6 +149,7 @@ class CodePointView @JvmOverloads constructor(
             animator.cancel()
         }
         animators.clear()
+        scanLineView.release()
     }
 
     fun setCancelButtonListener(cancelAction: (() -> Unit)?) {

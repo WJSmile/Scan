@@ -1,12 +1,15 @@
 package com.palmpay.scan.view
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
+import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
@@ -251,6 +254,7 @@ class ScanView @JvmOverloads constructor(
      */
     fun setLineWidth(lineWidth: Float) {
         boxView.lineWidth = lineWidth
+        codePointView.scanLineView.lineWidth = lineWidth
     }
 
     /**
@@ -258,6 +262,15 @@ class ScanView @JvmOverloads constructor(
      */
     fun setLineHeight(lineHeight: Float) {
         boxView.lineHeight = lineHeight
+        codePointView.scanLineView.lineHeight = lineHeight
+    }
+
+    /**
+     * @param lineTop 扫描线距离顶部的距离
+     */
+    fun setLineTop(lineTop: Float) {
+        boxView.boxTop = lineTop
+        codePointView.scanLineView.lineTop = lineTop
     }
 
     /**
@@ -303,5 +316,48 @@ class ScanView @JvmOverloads constructor(
         boxView.boxType = boxType
     }
 
+    /**
+     * @param animatorWidth 动画拖尾动画最大宽度
+     */
+    fun setAnimatorWidth(animatorWidth: Float) {
+        codePointView.scanLineView.animatorWidth = animatorWidth
+    }
+
+    /**
+     * @param animatorHeight 扫描线动画滚动距离
+     */
+    fun setAnimatorHeight(animatorHeight: Float) {
+        codePointView.scanLineView.animatorHeight = animatorHeight
+    }
+
+    /**
+     * @param time 扫描线动画时间
+     */
+    fun setAnimatorTime(time: Long) {
+        codePointView.scanLineView.animatorTime = time
+    }
+
+    /**
+     * @param id 扫描线资源id
+     */
+    @SuppressLint("UseCompatLoadingForDrawables")
+    fun setLineBitmap(@DrawableRes id: Int) {
+        setLineBitmap(context.resources.getDrawable(id).toBitmap())
+    }
+
+    /**
+     * @param bitmap 扫描线bitmap
+     */
+    fun setLineBitmap(bitmap: Bitmap) {
+        boxView.lineBitmap = bitmap
+        codePointView.scanLineView.lineBitmap = bitmap
+    }
+
+    /**
+     * @param id 拖尾效果资源id
+     */
+    fun setTrailingBitmap(@DrawableRes id: Int){
+        codePointView.scanLineView.setTrailingBitmap(id)
+    }
 
 }

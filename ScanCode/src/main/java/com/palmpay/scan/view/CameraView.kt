@@ -1,9 +1,7 @@
 package com.palmpay.scan.view
 
-import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
-import android.util.DisplayMetrics
 import android.util.Size
 import android.widget.FrameLayout
 import androidx.camera.core.*
@@ -23,7 +21,7 @@ class CameraView @JvmOverloads constructor(
 
     private val cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
 
-    private val imageAnalysis: ImageAnalysis
+    private var imageAnalysis: ImageAnalysis? = null
 
     private val preview: Preview = Preview.Builder().build()
 
@@ -35,32 +33,28 @@ class CameraView @JvmOverloads constructor(
 
     private var camera: Camera? = null
 
-    private var screenWidth = 0
-    private var screenHeight = 0
-
 
     private var analyzerListener: ((ImageProxy) -> Unit)? = null
 
     init {
-        val dm = DisplayMetrics()
-        (context as Activity).windowManager.defaultDisplay.getRealMetrics(dm)
-        screenWidth = dm.widthPixels
-        screenHeight = dm.heightPixels
+
 
         previewView = PreviewView(context)
-        addView(previewView, LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT))
+        addView(previewView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
-        imageAnalysis = ImageAnalysis.Builder()
-            .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
-            .setTargetResolution(Size(screenWidth, screenHeight))
-            .build()
+        post {
+            imageAnalysis = ImageAnalysis.Builder()
+                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
+                .setTargetResolution(Size(width, height))
+                .build()
 
-        imageAnalysis.setAnalyzer(executorService) { imageProxy ->
-            analyzerListener?.invoke(imageProxy)
+            imageAnalysis?.setAnalyzer(executorService) { imageProxy ->
+                analyzerListener?.invoke(imageProxy)
+            }
+            initCamera()
         }
-        initCamera()
     }
 
     private fun initCamera() {
@@ -85,7 +79,7 @@ class CameraView @JvmOverloads constructor(
         this.analyzerListener = action
     }
 
-    fun release(){
+    fun release() {
         cameraProviderFuture.get().unbindAll()
     }
 
