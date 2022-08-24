@@ -13,7 +13,6 @@ project("scancode")
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 file(GLOB native_file src/main/cpp/*.c src/main/cpp/*.cpp)
-
 add_library( # Sets the name of the library.
         scancode
 
@@ -42,6 +41,8 @@ find_library( # Sets the name of the path variable.
 
 set(JNI_LIBS_DIR ${CMAKE_SOURCE_DIR}/libs)
 
+add_subdirectory(src/main/cpp/zxing)
+include_directories(src/main/cpp/zxing)
 
 add_library(libiconv
         SHARED
@@ -117,6 +118,7 @@ include_directories(${JNI_LIBS_DIR}/include)
 
 target_link_libraries(
         scancode
+        ZXing
         libiconv
         libzbarjni
         libopencv_world

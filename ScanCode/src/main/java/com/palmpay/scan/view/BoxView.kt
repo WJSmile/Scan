@@ -18,11 +18,11 @@ class BoxView @JvmOverloads constructor(
 
     var boxSize: Float = 300.toPx(context)
 
-    var boxTop: Float = 200.toPx(context)
+    var boxTop: Float = 0F
 
     var boxRound: Float = 10.toPx(context)
 
-    private var boxRect: RectF = RectF()
+    var boxRect: RectF = RectF()
 
     var boxStrokeWidth = 2.toPx(context)
 
@@ -150,7 +150,12 @@ class BoxView @JvmOverloads constructor(
 
         boxPaint.style = Paint.Style.FILL
         val left = (width - boxSize) / 2
-        boxRect = RectF(left, boxTop, left + boxSize, boxTop + boxSize)
+        boxRect = if (boxTop == 0F) {
+            val top = (height - boxSize) / 2
+            RectF(left, top, left + boxSize, top + boxSize)
+        } else {
+            RectF(left, boxTop, left + boxSize, boxTop + boxSize)
+        }
         canvas?.drawRoundRect(
             boxRect,
             boxRound,
@@ -180,7 +185,13 @@ class BoxView @JvmOverloads constructor(
 
         boxPaint.style = Paint.Style.FILL
         val left = (width - boxSize) / 2
-        boxRect = RectF(left, boxTop, left + boxSize, boxTop + boxSize)
+        boxRect = if (boxTop == 0F) {
+            val top = (height - boxSize) / 2
+            RectF(left, top, left + boxSize, top + boxSize)
+        } else {
+            RectF(left, boxTop, left + boxSize, boxTop + boxSize)
+        }
+
         canvas?.drawRect(
             boxRect,
             boxPaint

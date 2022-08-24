@@ -71,7 +71,7 @@ class ScanView @JvmOverloads constructor(
             } else if (scanType == ScanType.SCAN_BOX) {
                 nativeLib.setImageByteForBox(
                     Utils.yuv420888ToNv21(it), it.width, it.height,
-                    boxView.boxSize.toInt(), boxView.boxTop.toInt()
+                    boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
                 )
             }
             it.close()
@@ -356,7 +356,7 @@ class ScanView @JvmOverloads constructor(
     /**
      * @param id 拖尾效果资源id
      */
-    fun setTrailingBitmap(@DrawableRes id: Int){
+    fun setTrailingBitmap(@DrawableRes id: Int) {
         codePointView.scanLineView.setTrailingBitmap(id)
     }
 

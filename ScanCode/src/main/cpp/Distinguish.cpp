@@ -2,6 +2,7 @@
 // Created by Zwj on 2022/6/16.
 //
 
+
 #include "Distinguish.h"
 #include "XLog.h"
 
@@ -36,7 +37,9 @@ void Distinguish::Main() {
 
         getQrCode(src, qrCodes);
         getBarCode(src, qrCodes);
-
+        if (qrCodes.empty()) {
+            zxingScan(src, qrCodes);
+        }
         if (javaCallHelper != nullptr) {
             if (!qrCodes.empty()) {
                 javaCallHelper->callBackOnPoint(qrCodes);
@@ -62,7 +65,6 @@ CodeBean Distinguish::scan(Mat &qrcode_mat) {
     Image::SymbolIterator symbol = imageZbar.symbol_begin();
 
     for (; symbol != imageZbar.symbol_end(); ++symbol) {
-
         codeBean.code = symbol->get_data();
         codeBean.type = symbol->get_type();
     }
@@ -103,7 +105,7 @@ void Distinguish::getBarCode(Mat &src, vector<CodeBean> &codeBeans) {
             trans[3] = Point2f(400, 0);
             Mat m = getPerspectiveTransform(points, trans);
 
-            warpPerspective(src, result, m, Size(400, 200), INTER_LINEAR);
+            warpPerspective(src, result, m, cv::Size(400, 200), INTER_LINEAR);
 
             CodeBean codeBean = scan(result);
             if (!codeBean.code.empty()) {
@@ -167,6 +169,8 @@ void Distinguish::release(JNIEnv *env) {
 
     delete imageScanner;
     imageScanner = nullptr;
+    hints.release();
+    hints = nullptr;
 
     detector.release();
     detector = nullptr;
@@ -189,6 +193,11 @@ Distinguish::Distinguish(const string &detect_prototxt, const string &detect_caf
     imageData = nullptr;
     javaCallHelper = new JavaCallHelper();
     imageScanner = new ImageScanner();
+    hints = makePtr<DecodeHints>();
+    hints->setTextMode(TextMode::HRI);
+    hints->setEanAddOnSymbol(EanAddOnSymbol::Ignore);
+    hints->setFormats(BarcodeFormat::Any);
+
     imageScanner->set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
 
     detector = makePtr<wechat_qrcode::WeChatQRCode>(detect_prototxt, detect_caffe_model,
@@ -213,6 +222,52 @@ void Distinguish::setImageData(ImageData *image) {
     }
     mux.unlock();
 }
+
+void Distinguish::zxingScan(Mat &qrcode_mat, vector<CodeBean> &codeBeans) {
+    cvtColor(qrcode_mat, qrcode_mat, COLOR_YUV2RGBA_NV21);
+    auto *image = new  ImageView(qrcode_mat.data, qrcode_mat.cols, qrcode_mat.rows, ImageFormat::RGBX);
+    auto results = ReadBarcodes(*image, *hints);
+    for (auto &result: results) {
+        if (result.isValid()) {
+            CodeBean codeBean;
+
+            codeBean.code = result.text();
+            vector<Point2f> points(4);
+            //topLeft
+            points[0] = Point2f((float) result.position().topLeft().x,
+                                (float) result.position().topLeft().y);
+
+            //bottomLeft
+            points[1] = Point2f((float) result.position().bottomLeft().x,
+                                (float) result.position().bottomLeft().y);
+
+            //bottomRight
+            points[2] = Point2f((float) result.position().bottomRight().x,
+                                (float) result.position().bottomRight().y);
+
+            //topRight
+            points[3] = Point2f((float) result.position().topRight().x,
+                                (float) result.position().topRight().y);
+
+            RotatedRect rectPoint = minAreaRect(Mat(points));
+            codeBean.center = rectPoint.center;
+            codeBean.rect = rectPoint.boundingRect();
+            codeBean.topLeft = points[0];
+            codeBean.bottomLeft = points[1];
+            codeBean.bottomRight = points[2];
+            codeBean.topRight = points[3];
+            codeBeans.push_back(codeBean);
+        } else if(result.error()){
+            XLOGE(">>>>>>%s",result.error().msg().c_str());
+        }
+    }
+    delete image;
+
+}
+
+
+
+
 
 
 

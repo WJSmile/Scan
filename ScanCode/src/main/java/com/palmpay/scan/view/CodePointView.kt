@@ -55,9 +55,19 @@ class CodePointView @JvmOverloads constructor(
         cancelTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, cancelTextSize)
         cancelTextView.setTextColor(context.resources.getColor(cancelColor))
 
+
+
+        addView(cancelTextView, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
+        cancelTextView.visibility = View.GONE
+
+        scanLineView = ScanLineView(context)
+        addView(scanLineView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+
         cancelTextView.setOnClickListener {
             cancelAction?.invoke()
-            release()
+            cancelAnimator()
+            scanLineView.visibility= View.VISIBLE
+            scanLineView.start()
             for (i in 0 until childCount) {
                 if (i > 1) {
                     removeView(getChildAt(i))
@@ -66,12 +76,6 @@ class CodePointView @JvmOverloads constructor(
             cancelTextView.visibility = View.GONE
             setBackgroundResource(R.color.transparent)
         }
-
-        addView(cancelTextView, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
-        cancelTextView.visibility = View.GONE
-
-        scanLineView = ScanLineView(context)
-        addView(scanLineView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
     }
 
 
@@ -114,7 +118,8 @@ class CodePointView @JvmOverloads constructor(
     fun setQrCodes(list: List<CodeBean>) {
         cancelTextView.visibility = View.VISIBLE
         setBackgroundResource(successColorRes)
-
+        scanLineView.pause()
+        scanLineView.visibility= View.GONE
         for (codeBean in list) {
             val view = View(context)
             view.setBackgroundResource(pointViewRes)
@@ -143,12 +148,16 @@ class CodePointView @JvmOverloads constructor(
         animators.add(animatorSet)
     }
 
-    fun release() {
+    private fun cancelAnimator(){
         for (animator in animators) {
             animator.clone()
             animator.cancel()
         }
         animators.clear()
+    }
+
+    fun release() {
+        cancelAnimator()
         scanLineView.release()
     }
 

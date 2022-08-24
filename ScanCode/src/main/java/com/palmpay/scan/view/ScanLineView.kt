@@ -53,13 +53,13 @@ class ScanLineView @JvmOverloads constructor(
 
     var lineHeight = 2.toPx(context)
 
-    var lineTop = 180.toPx(context)
+    var lineTop = 0F
 
     var animatorTime = 2000L
 
     var animatorWidth = 200.toPx(context)
 
-    var animatorHeight = 380.toPx(context)
+    var animatorHeight = 300.toPx(context)
 
     var lineColor: IntArray = intArrayOf(
         ContextCompat.getColor(context, R.color.scan_line_1),
@@ -77,16 +77,27 @@ class ScanLineView @JvmOverloads constructor(
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        var left = 0F
+
+        drawLine(canvas)
+
+        drawTrailing(canvas)
+    }
+
+
+    var lineLeft = 0F
+    private fun drawLine(canvas: Canvas?) {
         if (lineWidth < width) {
-            left = (width - lineWidth) / 2
+            lineLeft = (width - lineWidth) / 2
         } else {
             lineWidth = width.toFloat()
         }
-
-        rectF.top = lineTop + position
-        rectF.left = left
-        rectF.right = left + lineWidth
+        if (lineTop == 0F) {
+            rectF.top = (height - animatorHeight) / 2 + position
+        } else {
+            rectF.top = lineTop + position
+        }
+        rectF.left = lineLeft
+        rectF.right = lineLeft + lineWidth
         rectF.bottom = rectF.top + lineHeight
 
         if (lineBitmap == null) {
@@ -114,8 +125,9 @@ class ScanLineView @JvmOverloads constructor(
                 canvas?.drawBitmap(it, null, rectF, paint)
             }
         }
+    }
 
-
+    private fun drawTrailing(canvas: Canvas?) {
         if (isDown) {
             bitMapRect.top = (rectF.bottom - bitMapWidth).toInt()
             bitMapRect.left = rectF.left.toInt()
@@ -131,7 +143,6 @@ class ScanLineView @JvmOverloads constructor(
 
             canvas?.drawBitmap(trailingBitmap, null, bitMapRect, bitMapPaint)
         }
-
     }
 
     fun setTrailingBitmap(@DrawableRes id: Int) {
@@ -198,8 +209,19 @@ class ScanLineView @JvmOverloads constructor(
     }
 
     fun pause() {
-        animatorUp?.pause()
-        animatorDown?.pause()
+        if (isDown){
+            animatorDown?.pause()
+        }else{
+            animatorUp?.pause()
+        }
+    }
+
+    fun start(){
+        if (isDown){
+            animatorDown?.start()
+        }else{
+            animatorUp?.start()
+        }
     }
 
     fun release() {
