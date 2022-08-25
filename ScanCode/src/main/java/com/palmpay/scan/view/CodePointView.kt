@@ -49,6 +49,7 @@ class CodePointView @JvmOverloads constructor(
 
     val scanLineView: ScanLineView
 
+
     init {
         cancelTextView = TextView(context)
         cancelTextView.text = cancelText
@@ -68,12 +69,10 @@ class CodePointView @JvmOverloads constructor(
             cancelAnimator()
             scanLineView.visibility = View.VISIBLE
             scanLineView.start()
-            for (i in 0 until childCount) {
-                val child = getChildAt(i)
-                if (child.tag != null) {
-                    removeView(child)
-                }
-            }
+
+            removeAllViews()
+            addView(cancelTextView, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
+            addView(scanLineView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
             cancelTextView.visibility = View.GONE
             setBackgroundResource(R.color.transparent)
         }

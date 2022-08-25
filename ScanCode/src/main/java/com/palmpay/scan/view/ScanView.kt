@@ -20,7 +20,7 @@ import com.palmpay.scan.utils.Utils
 
 class ScanView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
-) : FrameLayout(context, attrs), LifecycleObserver {
+) : FrameLayout(context, attrs) {
 
 
     private var nativeLib: NativeLib? = NativeLib()
@@ -31,14 +31,13 @@ class ScanView @JvmOverloads constructor(
     private val lifecycle: Lifecycle
     private var onScanListener: OnScanListener? = null
 
-    private var scanType: ScanType = ScanType.SCAN_BOX
+    private var scanType: ScanType = ScanType.SCAN_FULL_SCREEN
 
     private var isPause = false
 
     init {
         lifecycle = (context as FragmentActivity).lifecycle
 
-        lifecycle.addObserver(this)
         cameraView = CameraView(context)
         addView(cameraView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
 
@@ -74,7 +73,8 @@ class ScanView @JvmOverloads constructor(
                         context.runOnUiThread {
                             codePointView?.setQrCodes(codeBeans)
                         }
-                        isPause = onScanListener?.onResult(codeBeans) == true
+                        onScanListener?.onResult(codeBeans)
+                        isPause = true
                     }
 
                 } else if (scanType == ScanType.SCAN_BOX) {
@@ -118,6 +118,7 @@ class ScanView @JvmOverloads constructor(
         codePointView?.release()
         codePointView = null
         boxView.release()
+        cameraView.unbindAll()
     }
 
 
@@ -136,11 +137,7 @@ class ScanView @JvmOverloads constructor(
     }
 
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun onDestroy() {
-        cameraView.unbindAll()
-        lifecycle.removeObserver(this)
-    }
+
 
     fun setScanType(scanType: ScanType) {
         this.scanType = scanType
