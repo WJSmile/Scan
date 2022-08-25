@@ -38,9 +38,12 @@ public:
 
     virtual void getBarCode(Mat &src, vector<CodeBean> &codeBeans);
 
-    virtual  ZXing::ImageView ImageViewFromMat(const cv::Mat& image);
+    virtual ZXing::ImageView ImageViewFromMat(const cv::Mat &image);
 
     virtual void release();
+
+    bool simpleMode = true;
+
 
 private:
     Ptr<ZXing::DecodeHints> hints;
@@ -49,7 +52,6 @@ private:
     Ptr<BarcodeDetector> brcodeDetector;
     vector<CodeBean> *qrCodes;
     JavaCallHelper *javaCallHelper;
-    int scanNum = 0;
 
 
 };

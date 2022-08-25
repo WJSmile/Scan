@@ -117,3 +117,12 @@ Java_com_palmpay_scan_code_NativeLib_scanCodeCut(JNIEnv *env, jobject thiz, jbyt
     }
     return obj;
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_palmpay_scan_code_NativeLib_setSimpleMode(JNIEnv *env, jobject thiz, jboolean is_simple) {
+    Distinguish *distinguish = GetDistinguishFromObj(env, thiz);
+    if (distinguish != nullptr) {
+        distinguish->simpleMode = is_simple;
+    }
+}

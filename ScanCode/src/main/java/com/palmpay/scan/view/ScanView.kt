@@ -57,7 +57,7 @@ class ScanView @JvmOverloads constructor(
                 paths[3]
             )
         }
-
+        nativeLib?.setSimpleMode(true)
         cameraView.setOnAnalyzerListener {
             if (!isPause) {
                 if (scanType == ScanType.SCAN_FULL_SCREEN) {

@@ -197,7 +197,7 @@ jobject Distinguish::decode(JNIEnv *env, ImageData *imageData) {
     if (qrCodes == nullptr) {
         return nullptr;
     }
-    scanNum++;
+
     qrCodes->clear();
 
     Mat src(imageData->height + imageData->height / 2,
@@ -220,8 +220,7 @@ jobject Distinguish::decode(JNIEnv *env, ImageData *imageData) {
 
     getBarCode(src, *qrCodes);
 
-    if (qrCodes->empty() && scanNum >= 3) {
-        scanNum = 0;
+    if (qrCodes->empty() && !simpleMode) {
         zxingScan(src, *qrCodes);
     }
 
@@ -241,9 +240,15 @@ ZXing::ImageView Distinguish::ImageViewFromMat(const Mat &image) {
 
     auto fmt = ImageFormat::None;
     switch (image.channels()) {
-        case 1: fmt = ImageFormat::Lum; break;
-        case 3: fmt = ImageFormat::BGR; break;
-        case 4: fmt = ImageFormat::BGRX; break;
+        case 1:
+            fmt = ImageFormat::Lum;
+            break;
+        case 3:
+            fmt = ImageFormat::BGR;
+            break;
+        case 4:
+            fmt = ImageFormat::BGRX;
+            break;
     }
     if (image.depth() != CV_8U || fmt == ImageFormat::None)
         return {nullptr, 0, 0, ImageFormat::None};

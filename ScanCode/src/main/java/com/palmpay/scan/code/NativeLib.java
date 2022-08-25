@@ -15,6 +15,8 @@ public class NativeLib {
 
     public native void initScan(String detectProtoTxt, String detectCaffeModel, String srProtoTxt, String srCaffeModel);
 
+    public native void setSimpleMode(boolean isSimple);
+
     public native ArrayList<CodeBean> scanCode(byte[] bytes, int width, int height);
 
     public native ArrayList<CodeBean> scanCodeCut(byte[] bytes, int width, int height,int boxWidth,int boxTop);
