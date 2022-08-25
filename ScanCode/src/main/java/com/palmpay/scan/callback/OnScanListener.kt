@@ -7,5 +7,5 @@ interface OnScanListener {
 
     fun onPointClick(codeBean: CodeBean){}
 
-    fun onResult(result:List<CodeBean>)
+    fun onResult(result:List<CodeBean>):Boolean
 }

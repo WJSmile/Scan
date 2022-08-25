@@ -228,9 +228,7 @@ class ScanLineView @JvmOverloads constructor(
         animatorDown?.removeAllListeners()
         animatorUp?.removeAllListeners()
         animatorDown?.cancel()
-        animatorDown?.clone()
         animatorUp?.cancel()
-        animatorUp?.clone()
         animatorDown = null
         animatorUp = null
     }

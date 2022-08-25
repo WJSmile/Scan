@@ -6,54 +6,6 @@
 #include "Distinguish.h"
 #include "XLog.h"
 
-void Distinguish::Main() {
-    vector<CodeBean> qrCodes;
-    while (!isExit) {
-        mux.lock();
-        if (data == nullptr || data->empty() || isPause) {
-            mux.unlock();
-            continue;
-        }
-        imageData = data->front();
-        data->pop_front();
-        mux.unlock();
-
-        Mat src(imageData->height + imageData->height / 2,
-                imageData->width, CV_8UC1,
-                (uchar *) imageData->data);
-
-        cvtColor(src, src, COLOR_YUV2GRAY_420);
-        rotate(src, src, ROTATE_90_CLOCKWISE);
-
-        if (imageData->boxWidth != 0 && imageData->boxTop != 0) {
-
-            Rect rect = Rect(Point((imageData->height - imageData->boxWidth) / 2,
-                                   imageData->boxTop),
-                             Point((imageData->height - imageData->boxWidth) / 2 +
-                                   imageData->boxWidth, imageData->boxTop + imageData->boxWidth));
-
-            src = src(rect);
-        }
-
-        getQrCode(src, qrCodes);
-        getBarCode(src, qrCodes);
-        if (qrCodes.empty()) {
-            zxingScan(src, qrCodes);
-        }
-        if (javaCallHelper != nullptr) {
-            if (!qrCodes.empty()) {
-                javaCallHelper->callBackOnPoint(qrCodes);
-            }
-        }
-
-        qrCodes.clear();
-        src.release();
-        imageData = nullptr;
-    }
-    signOut = true;
-}
-
-
 CodeBean Distinguish::scan(Mat &qrcode_mat) {
     int width = qrcode_mat.cols;
     int height = qrcode_mat.rows;
@@ -151,24 +103,17 @@ void Distinguish::getQrCode(Mat &src, vector<CodeBean> &codeBeans) {
     }
 }
 
-void Distinguish::release(JNIEnv *env) {
-    Stop();
-    mux.lock();
-    data->clear();
-    mux.unlock();
+void Distinguish::release() {
 
-    while (!signOut) {
-
+    if (!qrCodes->empty()) {
+        qrCodes->clear();
     }
-    delete data;
-    data = nullptr;
-    if (imageData != nullptr) {
-        delete imageData;
-        imageData = nullptr;
-    }
+    delete qrCodes;
+    qrCodes = nullptr;
 
     delete imageScanner;
     imageScanner = nullptr;
+
     hints.release();
     hints = nullptr;
 
@@ -178,7 +123,6 @@ void Distinguish::release(JNIEnv *env) {
     brcodeDetector.release();
     detector = nullptr;
 
-    javaCallHelper->release(env);
     delete javaCallHelper;
     javaCallHelper = nullptr;
 }
@@ -187,16 +131,15 @@ void Distinguish::release(JNIEnv *env) {
 Distinguish::Distinguish(const string &detect_prototxt, const string &detect_caffe_model,
                          const string &sr_prototxt,
                          const string &sr_caffe_model) {
-    signOut = false;
-    isPause = false;
-    data = new list<ImageData *>();
-    imageData = nullptr;
+
+
+    qrCodes = new vector<CodeBean>();
     javaCallHelper = new JavaCallHelper();
     imageScanner = new ImageScanner();
-    hints = makePtr<DecodeHints>();
-    hints->setTextMode(TextMode::HRI);
-    hints->setEanAddOnSymbol(EanAddOnSymbol::Ignore);
-    hints->setFormats(BarcodeFormat::Any);
+    hints = makePtr<ZXing::DecodeHints>();
+    hints->setTextMode(ZXing::TextMode::HRI);
+    hints->setEanAddOnSymbol(ZXing::EanAddOnSymbol::Ignore);
+    hints->setFormats(ZXing::BarcodeFormat::Any);
 
     imageScanner->set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
 
@@ -205,27 +148,12 @@ Distinguish::Distinguish(const string &detect_prototxt, const string &detect_caf
     brcodeDetector = makePtr<BarcodeDetector>(sr_prototxt, sr_caffe_model);
 }
 
-void Distinguish::pause(bool is_pause) {
-    mux.lock();
-    data->clear();
-    isPause = is_pause;
-    mux.unlock();
-}
 
+void Distinguish::zxingScan(Mat &qrcode, vector<CodeBean> &codeBeans) {
+    cvtColor(qrcode, qrcode, COLOR_GRAY2BGR);
 
-void Distinguish::setImageData(ImageData *image) {
-    mux.lock();
-    if (data != nullptr && data->empty() && !isExit) {
-        data->push_back(image);
-    } else {
-        delete image;
-    }
-    mux.unlock();
-}
-
-void Distinguish::zxingScan(Mat &qrcode_mat, vector<CodeBean> &codeBeans) {
-    cvtColor(qrcode_mat, qrcode_mat, COLOR_YUV2RGBA_NV21);
-    auto *image = new  ImageView(qrcode_mat.data, qrcode_mat.cols, qrcode_mat.rows, ImageFormat::RGBX);
+    auto *image = new ZXing::ImageView(qrcode.data, qrcode.cols, qrcode.rows,
+                                       ZXing::ImageFormat::BGR);
     auto results = ReadBarcodes(*image, *hints);
     for (auto &result: results) {
         if (result.isValid()) {
@@ -257,13 +185,57 @@ void Distinguish::zxingScan(Mat &qrcode_mat, vector<CodeBean> &codeBeans) {
             codeBean.bottomRight = points[2];
             codeBean.topRight = points[3];
             codeBeans.push_back(codeBean);
-        } else if(result.error()){
-            XLOGE(">>>>>>%s",result.error().msg().c_str());
+        } else if (result.error()) {
+            XLOGE(">>>>>>%s", result.error().msg().c_str());
         }
     }
     delete image;
 
 }
+
+jobject Distinguish::decode(JNIEnv *env, ImageData *imageData) {
+    if (qrCodes == nullptr) {
+        return nullptr;
+    }
+    scanNum++;
+    qrCodes->clear();
+
+    Mat src(imageData->height + imageData->height / 2,
+            imageData->width, CV_8UC1,
+            (uchar *) imageData->data);
+
+    cvtColor(src, src, COLOR_YUV2GRAY_420);
+    rotate(src, src, ROTATE_90_CLOCKWISE);
+
+    if (imageData->boxWidth != 0 && imageData->boxTop != 0) {
+        Rect rect = Rect(Point((src.cols - imageData->boxWidth) / 2,
+                               imageData->boxTop),
+                         Point((src.cols - imageData->boxWidth) / 2 +
+                               imageData->boxWidth, imageData->boxTop + imageData->boxWidth));
+
+        src = src(rect);
+    }
+
+    getQrCode(src, *qrCodes);
+
+    getBarCode(src, *qrCodes);
+
+    if (qrCodes->empty() && scanNum >= 3) {
+        scanNum = 0;
+        zxingScan(src, *qrCodes);
+    }
+
+    delete imageData;
+    src.release();
+
+    if (javaCallHelper != nullptr) {
+        if (!qrCodes->empty()) {
+            return javaCallHelper->codeBeanToJava(env, *qrCodes);
+        }
+    }
+    return nullptr;
+}
+
 
 
 

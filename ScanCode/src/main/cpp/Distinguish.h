@@ -22,17 +22,13 @@ using namespace zbar;
 using namespace cv;
 using namespace std;
 using namespace barcode;
-using namespace ZXing;
 
-class Distinguish : public XThread {
+class Distinguish {
 public:
     Distinguish(const string &detect_prototxt, const string &detect_caffe_model,
                 const string &sr_prototxt, const string &sr_caffe_model);
 
-
-
-    virtual void setImageData(ImageData *imageData);
-
+    virtual jobject decode(JNIEnv *env, ImageData *imageData);
 
     virtual CodeBean scan(Mat &qrcode_mat);
 
@@ -42,23 +38,16 @@ public:
 
     virtual void getBarCode(Mat &src, vector<CodeBean> &codeBeans);
 
-    void Main();
+    virtual void release();
 
-    virtual void pause(bool is_pause);
-
-    bool isPause = false;
-    list<ImageData *> *data;
-    ImageData *imageData;
-    Ptr<DecodeHints> hints;
+private:
+    Ptr<ZXing::DecodeHints> hints;
     ImageScanner *imageScanner;
     Ptr<wechat_qrcode::WeChatQRCode> detector;
     Ptr<BarcodeDetector> brcodeDetector;
-    std::mutex mux;
+    vector<CodeBean> *qrCodes;
     JavaCallHelper *javaCallHelper;
-
-    virtual void release(JNIEnv *env);
-
-    bool signOut = false;
+    int scanNum = 0;
 
 
 };

@@ -21,18 +21,19 @@ class MainActivity : AppCompatActivity() {
         ImmersionBar.with(this).transparentBar().init()
         scanView = findViewById(R.id.scan_view)
 
-        scanView.setOnScanListener(object :OnScanListener{
+        scanView.setOnScanListener(object : OnScanListener {
 
-            override fun onResult(result: List<CodeBean>) {
-                Log.e(">>>>>>",result[0].codeString)
+            override fun onResult(result: List<CodeBean>): Boolean {
+                Log.e(">>>>>>", result[0].codeString)
                 finish()
+                return true
             }
-
         })
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+
+    override fun onStop() {
+        super.onStop()
         scanView.release()
     }
 

@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
+import androidx.fragment.app.FragmentActivity
 import com.palmpay.scan.bean.CodeBean
 import com.palmpay.scan.utils.toPx
 import com.zwj.scancode.R
@@ -24,7 +25,6 @@ class CodePointView @JvmOverloads constructor(
     private val animators: MutableList<AnimatorSet> = mutableListOf()
     private var cancelAction: (() -> Unit)? = null
     private var pointAction: ((codeBean: CodeBean) -> Unit)? = null
-
 
     var cancelText: String = "cancel"
 
@@ -69,8 +69,9 @@ class CodePointView @JvmOverloads constructor(
             scanLineView.visibility= View.VISIBLE
             scanLineView.start()
             for (i in 0 until childCount) {
-                if (i > 1) {
-                    removeView(getChildAt(i))
+                val child = getChildAt(i)
+                if (child.tag != null) {
+                    removeView(child)
                 }
             }
             cancelTextView.visibility = View.GONE
@@ -150,15 +151,16 @@ class CodePointView @JvmOverloads constructor(
 
     private fun cancelAnimator(){
         for (animator in animators) {
-            animator.clone()
             animator.cancel()
         }
         animators.clear()
     }
 
     fun release() {
-        cancelAnimator()
-        scanLineView.release()
+        (context as FragmentActivity).runOnUiThread {
+            cancelAnimator()
+            scanLineView.release()
+        }
     }
 
     fun setCancelButtonListener(cancelAction: (() -> Unit)?) {

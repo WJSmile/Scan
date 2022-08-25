@@ -1,6 +1,10 @@
 package com.palmpay.scan.code;
 
 
+import com.palmpay.scan.bean.CodeBean;
+
+import java.util.ArrayList;
+
 public class NativeLib {
 
     static {
@@ -11,15 +15,9 @@ public class NativeLib {
 
     public native void initScan(String detectProtoTxt, String detectCaffeModel, String srProtoTxt, String srCaffeModel);
 
-    public native void setImageByte(byte[] bytes, int width, int height);
+    public native ArrayList<CodeBean> scanCode(byte[] bytes, int width, int height);
 
-    public native void setImageByteForBox(byte[] bytes, int width, int height,int boxWidth,int boxTop);
+    public native ArrayList<CodeBean> scanCodeCut(byte[] bytes, int width, int height,int boxWidth,int boxTop);
 
     public native void release();
-
-    public native void pause(boolean isPause);
-
-    public native void setBitMapCallBack(BitMapCallBack bitMapCallBack);
-
-    public native void setPointCallBack(PointCallBack pointCallBack);
 }

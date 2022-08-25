@@ -22,26 +22,8 @@ struct CodeBean {
 
 class JavaCallHelper {
 public:
-    JavaCallHelper();
+    virtual jobject codeBeanToJava(JNIEnv *env,std::vector<CodeBean> &qrCodeBean);
 
-    virtual void callBackBitMap(cv::Mat &mat);
-
-    virtual void callBackOnPoint(std::vector<CodeBean> &qrCodeBean);
-
-
-    virtual void release(JNIEnv *env);
-
-    jmethodID javaCallbackId;
-    jobject callback;
-    JavaVM *java_vm;
-
-
-    jmethodID javaCallbackOnPointId;
-    jobject point_call_back;
-    jobject java_qrcode_class;
-
-private:
-    JNIEnv *env;
 };
 
 

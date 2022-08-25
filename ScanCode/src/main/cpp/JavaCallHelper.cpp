@@ -3,21 +3,11 @@
 //
 
 #include "JavaCallHelper.h"
-#include "Utils.h"
-#include <iostream>
 
-void JavaCallHelper::callBackBitMap(cv::Mat &mat) {
-    java_vm->AttachCurrentThread(&env, nullptr);
-    env->CallVoidMethod(callback, javaCallbackId, Utils::mat_to_bitmap(env, mat, false));
-    java_vm->DetachCurrentThread();
-}
+jobject JavaCallHelper::codeBeanToJava(JNIEnv *env, std::vector<CodeBean> &qrCodes) {
 
-void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
-    if (java_vm == nullptr || point_call_back == nullptr || java_qrcode_class == nullptr) {
-        return;
-    }
-    java_vm->AttachCurrentThread(&env, nullptr);
     auto java_list_class = (jclass) env->FindClass("java/util/ArrayList");
+
     jmethodID list_mid = env->GetMethodID(java_list_class,
                                           "<init>", "()V");
 
@@ -26,15 +16,9 @@ void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
 
     jobject new_list = env->NewObject(java_list_class, list_mid);
 
-    if (qrCodes.empty()) {
-        env->CallVoidMethod(point_call_back, javaCallbackOnPointId, new_list);
-        env->DeleteLocalRef(new_list);
-        env->DeleteLocalRef(java_list_class);
-        java_vm->DetachCurrentThread();
-        return;
-    }
+    auto java_qrcode_class = (jclass) env->FindClass("com/palmpay/scan/bean/CodeBean");
 
-    jmethodID qrcode_mid = env->GetMethodID((jclass) java_qrcode_class,
+    jmethodID qrcode_mid = env->GetMethodID(java_qrcode_class,
                                             "<init>",
                                             "(Landroid/graphics/Rect;[BILandroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;)V");
 
@@ -43,7 +27,7 @@ void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
                                          "<init>", "(IIII)V");
 
     auto java_PointF_class = env->FindClass("android/graphics/PointF");
-    jmethodID PointFInitMid = env->GetMethodID(java_PointF_class,
+    jmethodID pointFInitMid = env->GetMethodID(java_PointF_class,
                                                "<init>", "(FF)V");
 
     for (auto &qrCode: qrCodes) {
@@ -52,15 +36,15 @@ void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
         jobject new_rect = env->NewObject(java_rect_class, rectMid, qrCode.rect.x, qrCode.rect.y,
                                           qrCode.rect.x + qrCode.rect.width,
                                           qrCode.rect.y + qrCode.rect.height);
-        jobject topLeft = env->NewObject(java_PointF_class, PointFInitMid, qrCode.topLeft.x,
+        jobject topLeft = env->NewObject(java_PointF_class, pointFInitMid, qrCode.topLeft.x,
                                          qrCode.topLeft.y);
-        jobject bottomLeft = env->NewObject(java_PointF_class, PointFInitMid, qrCode.bottomLeft.x,
+        jobject bottomLeft = env->NewObject(java_PointF_class, pointFInitMid, qrCode.bottomLeft.x,
                                             qrCode.bottomLeft.y);
-        jobject bottomRight = env->NewObject(java_PointF_class, PointFInitMid, qrCode.bottomRight.x,
+        jobject bottomRight = env->NewObject(java_PointF_class, pointFInitMid, qrCode.bottomRight.x,
                                              qrCode.bottomRight.y);
-        jobject topRight = env->NewObject(java_PointF_class, PointFInitMid, qrCode.topRight.x,
+        jobject topRight = env->NewObject(java_PointF_class, pointFInitMid, qrCode.topRight.x,
                                           qrCode.topRight.y);
-        jobject center = env->NewObject(java_PointF_class, PointFInitMid, qrCode.center.x,
+        jobject center = env->NewObject(java_PointF_class, pointFInitMid, qrCode.center.x,
                                         qrCode.center.y);
 
         jbyteArray jarray = env->NewByteArray(qrCode.code.length());
@@ -76,40 +60,13 @@ void JavaCallHelper::callBackOnPoint(std::vector<CodeBean> &qrCodes) {
     }
     qrCodes.clear();
 
-    env->CallVoidMethod(point_call_back, javaCallbackOnPointId, new_list);
-
-    env->DeleteLocalRef(new_list);
+    env->DeleteLocalRef(java_qrcode_class);
     env->DeleteLocalRef(java_list_class);
     env->DeleteLocalRef(java_rect_class);
     env->DeleteLocalRef(java_PointF_class);
-
-    java_vm->DetachCurrentThread();
+    return new_list;
 }
 
 
-JavaCallHelper::JavaCallHelper() {
-    point_call_back = nullptr;
-    java_qrcode_class = nullptr;
-    callback = nullptr;
-}
-
-void JavaCallHelper::release(JNIEnv *env) {
-    javaCallbackId = nullptr;
-    javaCallbackOnPointId = nullptr;
-    if (java_qrcode_class != nullptr) {
-        env->DeleteGlobalRef(java_qrcode_class);
-    }
-    java_qrcode_class = nullptr;
-
-    if (point_call_back != nullptr) {
-        env->DeleteGlobalRef(point_call_back);
-    }
-    point_call_back = nullptr;
-    if (callback != nullptr) {
-        env->DeleteGlobalRef(callback);
-    }
-    callback = nullptr;
-    java_vm = nullptr;
-}
 
 

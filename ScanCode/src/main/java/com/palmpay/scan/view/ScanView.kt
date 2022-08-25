@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.ImageView
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.core.graphics.drawable.toBitmap
@@ -15,34 +14,31 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.OnLifecycleEvent
-import com.palmpay.scan.bean.CodeBean
 import com.palmpay.scan.callback.OnScanListener
 import com.palmpay.scan.code.NativeLib
 import com.palmpay.scan.utils.Utils
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.nio.charset.Charset
 
 class ScanView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
-) : FrameLayout(context, attrs) {
+) : FrameLayout(context, attrs), LifecycleObserver {
 
 
-    private val nativeLib: NativeLib = NativeLib()
-
+    private var nativeLib: NativeLib? = NativeLib()
     private val cameraView: CameraView
-    private val codePointView: CodePointView
+    private var codePointView: CodePointView? = null
     private val boxView: BoxView
 
     private val lifecycle: Lifecycle
     private var onScanListener: OnScanListener? = null
 
-    private var scanType: ScanType = ScanType.SCAN_FULL_SCREEN
+    private var scanType: ScanType = ScanType.SCAN_BOX
+
+    private var isPause = false
 
     init {
         lifecycle = (context as FragmentActivity).lifecycle
 
+        lifecycle.addObserver(this)
         cameraView = CameraView(context)
         addView(cameraView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
 
@@ -55,7 +51,7 @@ class ScanView @JvmOverloads constructor(
 
         val paths = Utils.copyWeChatModel(context)
         if (paths.isNotEmpty()) {
-            nativeLib.initScan(
+            nativeLib?.initScan(
                 paths[0],
                 paths[1],
                 paths[2],
@@ -64,56 +60,64 @@ class ScanView @JvmOverloads constructor(
         }
 
         cameraView.setOnAnalyzerListener {
-            if (scanType == ScanType.SCAN_FULL_SCREEN) {
-                nativeLib.setImageByte(
-                    Utils.yuv420888ToNv21(it), it.width, it.height
-                )
-            } else if (scanType == ScanType.SCAN_BOX) {
-                nativeLib.setImageByteForBox(
-                    Utils.yuv420888ToNv21(it), it.width, it.height,
-                    boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
-                )
+            if (!isPause) {
+                if (scanType == ScanType.SCAN_FULL_SCREEN) {
+                    val codeBeans = nativeLib?.scanCode(
+                        Utils.yuv420888ToNv21(it), it.width, it.height
+                    )
+                    if (!codeBeans.isNullOrEmpty()) {
+                        if (lifecycle is LifecycleRegistry) {
+                            context.runOnUiThread {
+                                lifecycle.currentState = Lifecycle.State.CREATED
+                            }
+                        }
+                        context.runOnUiThread {
+                            codePointView?.setQrCodes(codeBeans)
+                        }
+                        isPause = onScanListener?.onResult(codeBeans) == true
+                    }
+
+                } else if (scanType == ScanType.SCAN_BOX) {
+
+                    val codeBeans = nativeLib?.scanCodeCut(
+                        Utils.yuv420888ToNv21(it), it.width, it.height,
+                        boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
+                    )
+                    if (!codeBeans.isNullOrEmpty()) {
+                        isPause = onScanListener?.onResult(codeBeans) == true
+
+                    }
+                }
             }
             it.close()
         }
 
-        nativeLib.setPointCallBack {
-            if (scanType == ScanType.SCAN_FULL_SCREEN) {
-                if (lifecycle is LifecycleRegistry) {
-                    context.runOnUiThread {
-                        lifecycle.currentState = Lifecycle.State.CREATED
-                    }
-                }
-                nativeLib.pause(true)
-                context.runOnUiThread {
-                    codePointView.setQrCodes(it)
-                }
-            } else if (scanType == ScanType.SCAN_BOX) {
-
-            }
-            onScanListener?.onResult(it)
-        }
-
-        codePointView.setCancelButtonListener {
+        codePointView?.setCancelButtonListener {
+            isPause = false
             if (lifecycle is LifecycleRegistry) {
                 lifecycle.currentState = Lifecycle.State.RESUMED
-                nativeLib.pause(false)
             }
             onScanListener?.onCancel()
         }
 
-        codePointView.setPointButtonListener {
+        codePointView?.setPointButtonListener {
             onScanListener?.onPointClick(it)
         }
 
         refreshStatus()
     }
 
+    fun pause(){
+        isPause = true
+    }
 
     fun release() {
-        nativeLib.release()
-        cameraView.release()
-        codePointView.release()
+        cameraView.setOnAnalyzerListener(null)
+        nativeLib?.release()
+        nativeLib = null
+        codePointView?.release()
+        codePointView = null
+        boxView.release()
     }
 
 
@@ -123,12 +127,19 @@ class ScanView @JvmOverloads constructor(
 
     private fun refreshStatus() {
         if (scanType == ScanType.SCAN_FULL_SCREEN) {
-            codePointView.visibility = View.VISIBLE
+            codePointView?.visibility = View.VISIBLE
             boxView.visibility = View.GONE
         } else {
-            codePointView.visibility = View.GONE
+            codePointView?.visibility = View.GONE
             boxView.visibility = View.VISIBLE
         }
+    }
+
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    fun onDestroy() {
+        cameraView.unbindAll()
+        lifecycle.removeObserver(this)
     }
 
     fun setScanType(scanType: ScanType) {
@@ -142,7 +153,7 @@ class ScanView @JvmOverloads constructor(
      *
      */
     fun setCancelText(cancelText: String) {
-        codePointView.cancelText = cancelText
+        codePointView?.cancelText = cancelText
     }
 
     /**
@@ -151,7 +162,7 @@ class ScanView @JvmOverloads constructor(
      *
      */
     fun setCancelColor(@ColorRes color: Int) {
-        codePointView.cancelColor = color
+        codePointView?.cancelColor = color
     }
 
     /**
@@ -160,7 +171,7 @@ class ScanView @JvmOverloads constructor(
      *
      */
     fun setCancelTextSize(cancelTextSize: Float) {
-        codePointView.cancelTextSize = cancelTextSize
+        codePointView?.cancelTextSize = cancelTextSize
     }
 
 
@@ -170,7 +181,7 @@ class ScanView @JvmOverloads constructor(
      *
      */
     fun setCancelTop(cancelTop: Int) {
-        codePointView.cancelTop = cancelTop
+        codePointView?.cancelTop = cancelTop
     }
 
 
@@ -180,7 +191,7 @@ class ScanView @JvmOverloads constructor(
      *
      */
     fun setCancelLeft(cancelLeft: Int) {
-        codePointView.cancelLeft = cancelLeft
+        codePointView?.cancelLeft = cancelLeft
     }
 
 
@@ -190,7 +201,7 @@ class ScanView @JvmOverloads constructor(
      *
      */
     fun setPointViewRes(@DrawableRes pointViewRes: Int) {
-        codePointView.pointViewRes = pointViewRes
+        codePointView?.pointViewRes = pointViewRes
     }
 
 
@@ -200,14 +211,14 @@ class ScanView @JvmOverloads constructor(
      *
      */
     fun setPointViewSize(size: Int) {
-        codePointView.pointViewSize = size
+        codePointView?.pointViewSize = size
     }
 
     /**
      * @param successColorRes 识别到二维码显示的背景色
      */
     fun setSuccessColorRes(successColorRes: Int) {
-        codePointView.successColorRes = successColorRes
+        codePointView?.successColorRes = successColorRes
     }
 
 
@@ -254,7 +265,7 @@ class ScanView @JvmOverloads constructor(
      */
     fun setLineWidth(lineWidth: Float) {
         boxView.lineWidth = lineWidth
-        codePointView.scanLineView.lineWidth = lineWidth
+        codePointView?.scanLineView?.lineWidth = lineWidth
     }
 
     /**
@@ -262,7 +273,7 @@ class ScanView @JvmOverloads constructor(
      */
     fun setLineHeight(lineHeight: Float) {
         boxView.lineHeight = lineHeight
-        codePointView.scanLineView.lineHeight = lineHeight
+        codePointView?.scanLineView?.lineHeight = lineHeight
     }
 
     /**
@@ -270,7 +281,7 @@ class ScanView @JvmOverloads constructor(
      */
     fun setLineTop(lineTop: Float) {
         boxView.boxTop = lineTop
-        codePointView.scanLineView.lineTop = lineTop
+        codePointView?.scanLineView?.lineTop = lineTop
     }
 
     /**
@@ -320,21 +331,21 @@ class ScanView @JvmOverloads constructor(
      * @param animatorWidth 动画拖尾动画最大宽度
      */
     fun setAnimatorWidth(animatorWidth: Float) {
-        codePointView.scanLineView.animatorWidth = animatorWidth
+        codePointView?.scanLineView?.animatorWidth = animatorWidth
     }
 
     /**
      * @param animatorHeight 扫描线动画滚动距离
      */
     fun setAnimatorHeight(animatorHeight: Float) {
-        codePointView.scanLineView.animatorHeight = animatorHeight
+        codePointView?.scanLineView?.animatorHeight = animatorHeight
     }
 
     /**
      * @param time 扫描线动画时间
      */
     fun setAnimatorTime(time: Long) {
-        codePointView.scanLineView.animatorTime = time
+        codePointView?.scanLineView?.animatorTime = time
     }
 
     /**
@@ -350,14 +361,14 @@ class ScanView @JvmOverloads constructor(
      */
     fun setLineBitmap(bitmap: Bitmap) {
         boxView.lineBitmap = bitmap
-        codePointView.scanLineView.lineBitmap = bitmap
+        codePointView?.scanLineView?.lineBitmap = bitmap
     }
 
     /**
      * @param id 拖尾效果资源id
      */
     fun setTrailingBitmap(@DrawableRes id: Int) {
-        codePointView.scanLineView.setTrailingBitmap(id)
+        codePointView?.scanLineView?.setTrailingBitmap(id)
     }
 
 }

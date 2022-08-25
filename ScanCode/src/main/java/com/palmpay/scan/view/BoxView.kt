@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import com.palmpay.scan.utils.toPx
 import com.zwj.scancode.R
 
@@ -124,10 +125,8 @@ class BoxView @JvmOverloads constructor(
     }
 
     fun resetLineAnimator() {
-
         if (lineAnimator != null || lineAnimator?.isRunning == true) {
             lineAnimator?.cancel()
-            lineAnimator?.clone()
             lineAnimator = null
         }
 
@@ -143,6 +142,15 @@ class BoxView @JvmOverloads constructor(
         lineAnimator?.repeatCount = ValueAnimator.INFINITE
         lineAnimator?.start()
 
+    }
+
+    fun release() {
+        if (lineAnimator != null){
+            (context as FragmentActivity).runOnUiThread{
+                lineAnimator?.removeAllListeners()
+                lineAnimator?.cancel()
+            }
+        }
     }
 
 

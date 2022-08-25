@@ -38,7 +38,6 @@ class CameraView @JvmOverloads constructor(
 
     init {
 
-
         previewView = PreviewView(context)
         addView(previewView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
 
@@ -75,12 +74,12 @@ class CameraView @JvmOverloads constructor(
     }
 
 
-    fun setOnAnalyzerListener(action: (ImageProxy) -> Unit) {
+    fun setOnAnalyzerListener(action: ((ImageProxy) -> Unit)?) {
         this.analyzerListener = action
     }
 
-    fun release() {
-        cameraProviderFuture.get().unbindAll()
+    fun unbindAll() {
+       cameraProviderFuture.get().unbindAll()
     }
 
 }
