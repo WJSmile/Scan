@@ -31,7 +31,7 @@ class ScanView @JvmOverloads constructor(
     private val lifecycle: Lifecycle
     private var onScanListener: OnScanListener? = null
 
-    private var scanType: ScanType = ScanType.SCAN_FULL_SCREEN
+    private var scanType: ScanType = ScanType.SCAN_BOX
 
     private var isPause = false
 
@@ -65,6 +65,7 @@ class ScanView @JvmOverloads constructor(
                         Utils.yuv420888ToNv21(it), it.width, it.height
                     )
                     if (!codeBeans.isNullOrEmpty()) {
+                        isPause = true
                         if (lifecycle is LifecycleRegistry) {
                             context.runOnUiThread {
                                 lifecycle.currentState = Lifecycle.State.CREATED
@@ -74,7 +75,6 @@ class ScanView @JvmOverloads constructor(
                             codePointView?.setQrCodes(codeBeans)
                         }
                         onScanListener?.onResult(codeBeans)
-                        isPause = true
                     }
 
                 } else if (scanType == ScanType.SCAN_BOX) {
