@@ -66,7 +66,7 @@ class CodePointView @JvmOverloads constructor(
         cancelTextView.setOnClickListener {
             cancelAction?.invoke()
             cancelAnimator()
-            scanLineView.visibility= View.VISIBLE
+            scanLineView.visibility = View.VISIBLE
             scanLineView.start()
             for (i in 0 until childCount) {
                 val child = getChildAt(i)
@@ -120,7 +120,7 @@ class CodePointView @JvmOverloads constructor(
         cancelTextView.visibility = View.VISIBLE
         setBackgroundResource(successColorRes)
         scanLineView.pause()
-        scanLineView.visibility= View.GONE
+        scanLineView.visibility = View.GONE
         for (codeBean in list) {
             val view = View(context)
             view.setBackgroundResource(pointViewRes)
@@ -149,7 +149,7 @@ class CodePointView @JvmOverloads constructor(
         animators.add(animatorSet)
     }
 
-    private fun cancelAnimator(){
+    private fun cancelAnimator() {
         for (animator in animators) {
             animator.cancel()
         }
@@ -157,10 +157,8 @@ class CodePointView @JvmOverloads constructor(
     }
 
     fun release() {
-        (context as FragmentActivity).runOnUiThread {
-            cancelAnimator()
-            scanLineView.release()
-        }
+        cancelAnimator()
+        scanLineView.release()
     }
 
     fun setCancelButtonListener(cancelAction: (() -> Unit)?) {

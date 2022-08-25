@@ -145,11 +145,9 @@ class BoxView @JvmOverloads constructor(
     }
 
     fun release() {
-        if (lineAnimator != null){
-            (context as FragmentActivity).runOnUiThread{
-                lineAnimator?.removeAllListeners()
-                lineAnimator?.cancel()
-            }
+        if (lineAnimator != null) {
+            lineAnimator?.removeAllListeners()
+            lineAnimator?.cancel()
         }
     }
 
