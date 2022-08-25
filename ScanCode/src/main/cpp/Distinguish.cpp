@@ -150,10 +150,10 @@ Distinguish::Distinguish(const string &detect_prototxt, const string &detect_caf
 
 
 void Distinguish::zxingScan(Mat &qrcode, vector<CodeBean> &codeBeans) {
-    cvtColor(qrcode, qrcode, COLOR_GRAY2BGR);
+    cvtColor(qrcode, qrcode, COLOR_BGR2BGRA);
 
     auto *image = new ZXing::ImageView(qrcode.data, qrcode.cols, qrcode.rows,
-                                       ZXing::ImageFormat::BGR);
+                                       ZXing::ImageFormat::BGRX);
     auto results = ReadBarcodes(*image, *hints);
     for (auto &result: results) {
         if (result.isValid()) {
@@ -235,6 +235,23 @@ jobject Distinguish::decode(JNIEnv *env, ImageData *imageData) {
     }
     return nullptr;
 }
+
+ZXing::ImageView Distinguish::ImageViewFromMat(const Mat &image) {
+    using ZXing::ImageFormat;
+
+    auto fmt = ImageFormat::None;
+    switch (image.channels()) {
+        case 1: fmt = ImageFormat::Lum; break;
+        case 3: fmt = ImageFormat::BGR; break;
+        case 4: fmt = ImageFormat::BGRX; break;
+    }
+    if (image.depth() != CV_8U || fmt == ImageFormat::None)
+        return {nullptr, 0, 0, ImageFormat::None};
+
+    return {image.data, image.cols, image.rows, fmt};
+}
+
+
 
 
 
