@@ -25,8 +25,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onResult(result: List<CodeBean>): Boolean {
                 Log.e(">>>>>>", result[0].codeString)
-                finish()
-                return true
+                return false
             }
         })
     }

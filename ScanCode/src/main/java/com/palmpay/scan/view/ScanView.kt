@@ -31,7 +31,7 @@ class ScanView @JvmOverloads constructor(
     private val lifecycle: Lifecycle
     private var onScanListener: OnScanListener? = null
 
-    private var scanType: ScanType = ScanType.SCAN_BOX
+    private var scanType: ScanType = ScanType.SCAN_FULL_SCREEN
 
     private var isPause = false
 
