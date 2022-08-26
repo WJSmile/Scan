@@ -11,9 +11,10 @@ import androidx.annotation.DrawableRes
 import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.OnLifecycleEvent
+import com.palmpay.scan.bean.ScanCodeType
+import com.palmpay.scan.bean.ScanMode
+import com.palmpay.scan.bean.ScanType
 import com.palmpay.scan.callback.OnScanListener
 import com.palmpay.scan.code.NativeLib
 import com.palmpay.scan.utils.Utils
@@ -57,7 +58,6 @@ class ScanView @JvmOverloads constructor(
                 paths[3]
             )
         }
-        nativeLib?.setSimpleMode(true)
         cameraView.setOnAnalyzerListener {
             if (!isPause) {
                 if (scanType == ScanType.SCAN_FULL_SCREEN) {
@@ -107,10 +107,16 @@ class ScanView @JvmOverloads constructor(
         refreshStatus()
     }
 
-    fun pause(){
-        isPause = true
+    /**
+     * 是否暂停识别
+     */
+    fun pause(isPause: Boolean) {
+        this.isPause = isPause
     }
 
+    /**
+     * 释放内存，不用时，请一定调用
+     */
     fun release() {
         cameraView.setOnAnalyzerListener(null)
         nativeLib?.release()
@@ -122,6 +128,9 @@ class ScanView @JvmOverloads constructor(
     }
 
 
+    /**
+     *@param onScanListener 监听二维码扫描结果
+     */
     fun setOnScanListener(onScanListener: OnScanListener?) {
         this.onScanListener = onScanListener
     }
@@ -136,9 +145,22 @@ class ScanView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * @param scanMode 扫描模式，ScanMode.SIMPLE 为简单模式 识别速度块 支持的类型少
+     * ScanMode.MANY 支持多种类型模式，识别速度慢，支持类型多
+     */
+    fun setScanMode(scanMode: ScanMode) {
+        if (scanMode == ScanMode.SIMPLE) {
+            nativeLib?.setSimpleMode(true)
+        } else if (scanMode == ScanMode.MANY) {
+            nativeLib?.setSimpleMode(false)
+        }
+    }
 
-
-
+    /**
+     * @param scanType 扫描类型 ScanType.SCAN_FULL_SCREEN 铺满全屏。支持多码识别并标出位置，
+     * ScanType.SCAN_BOX 截取 box中的图片识别，不会标出位置，会返回多个码。
+     */
     fun setScanType(scanType: ScanType) {
         this.scanType = scanType
         refreshStatus()

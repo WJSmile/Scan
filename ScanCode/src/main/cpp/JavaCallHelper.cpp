@@ -3,6 +3,7 @@
 //
 
 #include "JavaCallHelper.h"
+#include "XLog.h"
 
 jobject JavaCallHelper::codeBeanToJava(JNIEnv *env, std::vector<CodeBean> &qrCodes) {
 
@@ -20,7 +21,7 @@ jobject JavaCallHelper::codeBeanToJava(JNIEnv *env, std::vector<CodeBean> &qrCod
 
     jmethodID qrcode_mid = env->GetMethodID(java_qrcode_class,
                                             "<init>",
-                                            "(Landroid/graphics/Rect;[BILandroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;)V");
+                                            "(Landroid/graphics/Rect;[BLjava/lang/String;Landroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;Landroid/graphics/PointF;)V");
 
     auto java_rect_class = (jclass) env->FindClass("android/graphics/Rect");
     jmethodID rectMid = env->GetMethodID(java_rect_class,
@@ -51,7 +52,7 @@ jobject JavaCallHelper::codeBeanToJava(JNIEnv *env, std::vector<CodeBean> &qrCod
         env->SetByteArrayRegion(jarray, 0, qrCode.code.length(), (jbyte *) qrCode.code.c_str());
 
         jobject new_qrcode = env->NewObject((jclass) java_qrcode_class, qrcode_mid, new_rect,
-                                            jarray, qrCode.type,
+                                            jarray, env->NewStringUTF(qrCode.type.c_str()),
                                             topLeft, bottomLeft, bottomRight, topRight, center);
 
         env->CallBooleanMethod(new_list, list_add_mid, new_qrcode);

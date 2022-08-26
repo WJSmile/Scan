@@ -18,7 +18,7 @@ CodeBean Distinguish::scan(Mat &qrcode_mat) {
 
     for (; symbol != imageZbar.symbol_end(); ++symbol) {
         codeBean.code = symbol->get_data();
-        codeBean.type = symbol->get_type();
+        codeBean.type = getCodeTypeString(symbol->get_type(), ZXing::BarcodeFormat::None);
     }
     imageZbar.set_data(nullptr, 0);
     return codeBean;
@@ -97,7 +97,7 @@ void Distinguish::getQrCode(Mat &src, vector<CodeBean> &codeBeans) {
         RotatedRect rectPoint = minAreaRect(Mat(vPoints[i]));
         codeBean.center = rectPoint.center;
         codeBean.rect = rectPoint.boundingRect();
-
+        codeBean.type = "QRCODE";
         codeBean.code = strDecoded[i];
         codeBeans.push_back(codeBean);
     }
@@ -158,7 +158,6 @@ void Distinguish::zxingScan(Mat &qrcode, vector<CodeBean> &codeBeans) {
     for (auto &result: results) {
         if (result.isValid()) {
             CodeBean codeBean;
-
             codeBean.code = result.text();
             vector<Point2f> points(4);
             //topLeft
@@ -184,9 +183,10 @@ void Distinguish::zxingScan(Mat &qrcode, vector<CodeBean> &codeBeans) {
             codeBean.bottomLeft = points[1];
             codeBean.bottomRight = points[2];
             codeBean.topRight = points[3];
+            codeBean.type = getCodeTypeString(zbar::ZBAR_NONE, result.format());
             codeBeans.push_back(codeBean);
         } else if (result.error()) {
-            XLOGE(">>>>>>%s", result.error().msg().c_str());
+            XLOGE("%s", result.error().msg().c_str());
         }
     }
     delete image;
@@ -254,6 +254,95 @@ ZXing::ImageView Distinguish::ImageViewFromMat(const Mat &image) {
         return {nullptr, 0, 0, ImageFormat::None};
 
     return {image.data, image.cols, image.rows, fmt};
+}
+
+string
+Distinguish::getCodeTypeString(zbar_symbol_type_e zbarType, ZXing::BarcodeFormat barcodeFormat) {
+    if (zbarType != ZBAR_NONE) {
+        switch (zbarType) {
+            case ZBAR_PARTIAL:
+                return "PARTIAL";
+            case ZBAR_EAN2:
+                return "EAN2";
+            case ZBAR_EAN5:
+                return "EAN5";
+            case ZBAR_EAN8:
+                return "EAN8";
+            case ZBAR_UPCE:
+                return "UPCE";
+            case ZBAR_ISBN10:
+                return "ISBN10";
+            case ZBAR_UPCA:
+                return "UPCA";
+            case ZBAR_EAN13:
+                return "EAN13";
+            case ZBAR_ISBN13:
+                return "ISBN13";
+            case ZBAR_COMPOSITE:
+                return "COMPOSITE";
+            case ZBAR_I25:
+                return "I25";
+            case ZBAR_DATABAR:
+                return "DataBar";
+            case ZBAR_DATABAR_EXP:
+                return "DataBarExpanded";
+            case ZBAR_CODABAR:
+                return "Codabar";
+            case ZBAR_CODE39:
+                return "CODE39";
+            case ZBAR_PDF417:
+                return "PDF417";
+            case ZBAR_QRCODE:
+                return "QRCODE";
+            case ZBAR_CODE93:
+                return "CODE93";
+            case ZBAR_CODE128:
+                return "CODE128";
+            default:
+                return "None";
+        }
+
+    } else if (barcodeFormat != ZXing::BarcodeFormat::None) {
+        switch (barcodeFormat) {
+            case ZXing::BarcodeFormat::Aztec:
+                return "Aztec";
+            case ZXing::BarcodeFormat::Codabar:
+                return "Codabar";
+            case ZXing::BarcodeFormat::Code39:
+                return "CODE39";
+            case ZXing::BarcodeFormat::Code93:
+                return "CODE93";
+            case ZXing::BarcodeFormat::Code128:
+                return "CODE128";
+            case ZXing::BarcodeFormat::DataBar:
+                return "DataBar";
+            case ZXing::BarcodeFormat::DataBarExpanded:
+                return "DataBarExpanded";
+            case ZXing::BarcodeFormat::DataMatrix:
+                return "DataMatrix";
+            case ZXing::BarcodeFormat::EAN8:
+                return "EAN8";
+            case ZXing::BarcodeFormat::EAN13:
+                return "EAN13";
+            case ZXing::BarcodeFormat::ITF:
+                return "ITF";
+            case ZXing::BarcodeFormat::MaxiCode:
+                return "MaxiCode";
+            case ZXing::BarcodeFormat::PDF417:
+                return "PDF417";
+            case ZXing::BarcodeFormat::QRCode:
+                return "QRCODE";
+            case ZXing::BarcodeFormat::UPCA:
+                return "UPCA";
+            case ZXing::BarcodeFormat::UPCE:
+                return "UPCE";
+            case ZXing::BarcodeFormat::MicroQRCode:
+                return "MicroQRCode";
+            default:
+                return "None";
+        }
+    }
+    return "None";
 }
 
 

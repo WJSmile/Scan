@@ -1,4 +1,4 @@
-package com.palmpay.scan.view
+package com.palmpay.scan.bean
 
 enum class ScanType {
     SCAN_FULL_SCREEN,

@@ -10,7 +10,7 @@
 #include <jni.h>
 
 struct CodeBean {
-    int type;
+    std::string type;
     cv::Point2f topLeft;
     cv::Point2f bottomLeft;
     cv::Point2f bottomRight;

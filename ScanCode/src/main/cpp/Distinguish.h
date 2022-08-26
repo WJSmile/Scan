@@ -40,6 +40,8 @@ public:
 
     virtual ZXing::ImageView ImageViewFromMat(const cv::Mat &image);
 
+    virtual string getCodeTypeString(zbar_symbol_type_e zbarType,ZXing::BarcodeFormat barcodeFormat);
+
     virtual void release();
 
     bool simpleMode = true;
