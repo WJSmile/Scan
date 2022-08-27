@@ -8,7 +8,7 @@ endif()
 zxing_add_package(zueci zueci https://git.code.sf.net/p/libzueci/code master)
 
 if (NOT DEFINED BUILD_WRITERS)
-    set (BUILD_WRITERS OFF)
+    set (BUILD_WRITERS ON)
 endif()
 
 if (NOT DEFINED BUILD_READERS)

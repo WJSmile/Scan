@@ -60,33 +60,31 @@ class ScanView @JvmOverloads constructor(
         }
         cameraView.setOnAnalyzerListener {
             if (!isPause) {
-                if (scanType == ScanType.SCAN_FULL_SCREEN) {
-                    val codeBeans = nativeLib?.scanCode(
-                        Utils.yuv420888ToNv21(it), it.width, it.height
-                    )
-                    if (!codeBeans.isNullOrEmpty()) {
-                        isPause = true
-                        if (lifecycle is LifecycleRegistry) {
-                            context.runOnUiThread {
-                                lifecycle.currentState = Lifecycle.State.CREATED
-                            }
-                        }
+                val codeBeans = nativeLib?.scanCode(
+                    Utils.yuv420888ToNv21(it), it.width, it.height
+                )
+                if (!codeBeans.isNullOrEmpty()) {
+                    isPause = true
+                    if (lifecycle is LifecycleRegistry) {
                         context.runOnUiThread {
-                            codePointView?.setQrCodes(codeBeans)
+                            lifecycle.currentState = Lifecycle.State.CREATED
                         }
-                        onScanListener?.onResult(codeBeans)
                     }
-
-                } else if (scanType == ScanType.SCAN_BOX) {
-
-                    val codeBeans = nativeLib?.scanCodeCut(
-                        Utils.yuv420888ToNv21(it), it.width, it.height,
-                        boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
-                    )
-                    if (!codeBeans.isNullOrEmpty()) {
-                        isPause = onScanListener?.onResult(codeBeans) == true
-
+                    context.runOnUiThread {
+                        codePointView?.setQrCodes(codeBeans)
                     }
+                    onScanListener?.onResult(codeBeans)
+                }
+
+            } else if (scanType == ScanType.SCAN_BOX) {
+
+                val codeBeans = nativeLib?.scanCodeCut(
+                    Utils.yuv420888ToNv21(it), it.width, it.height,
+                    boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
+                )
+                if (!codeBeans.isNullOrEmpty()) {
+                    isPause = onScanListener?.onResult(codeBeans) == true
+
                 }
             }
             it.close()
@@ -118,6 +116,7 @@ class ScanView @JvmOverloads constructor(
      * 释放内存，不用时，请一定调用
      */
     fun release() {
+        this.isPause = true
         cameraView.setOnAnalyzerListener(null)
         nativeLib?.release()
         nativeLib = null

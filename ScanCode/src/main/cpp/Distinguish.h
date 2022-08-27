@@ -30,7 +30,7 @@ public:
 
     virtual jobject decode(JNIEnv *env, ImageData *imageData);
 
-    virtual CodeBean scan(Mat &qrcode_mat);
+    virtual CodeBean zbarScan(Mat &qrcode_mat);
 
     virtual void zxingScan(Mat &qrcode_mat, vector<CodeBean> &codeBeans);
 
@@ -54,6 +54,7 @@ private:
     Ptr<BarcodeDetector> brcodeDetector;
     vector<CodeBean> *qrCodes;
     JavaCallHelper *javaCallHelper;
+    std::mutex mux;
 
 
 };

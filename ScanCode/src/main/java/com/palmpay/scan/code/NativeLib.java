@@ -19,7 +19,17 @@ public class NativeLib {
 
     public native ArrayList<CodeBean> scanCode(byte[] bytes, int width, int height);
 
-    public native ArrayList<CodeBean> scanCodeCut(byte[] bytes, int width, int height,int boxWidth,int boxTop);
+    public native ArrayList<CodeBean> scanCodeCut(byte[] bytes, int width, int height, int boxWidth, int boxTop);
+
+    public native int[] getCodeBitMap(String contents,
+                                      int width,
+                                      int height,
+                                      String barcodeFormatName,
+                                      String characterSetName,
+                                      int level,
+                                      int margin,
+                                      int black,
+                                      int white);
 
     public native void release();
 }

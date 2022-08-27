@@ -1,6 +1,7 @@
 #include <jni.h>
 #include "Distinguish.h"
 #include "XLog.h"
+#include "Utils.h"
 
 Distinguish *GetDistinguishFromObj(JNIEnv *env, jobject obj) {
     auto objClazz = (jclass) env->GetObjectClass(obj);
@@ -125,4 +126,40 @@ Java_com_palmpay_scan_code_NativeLib_setSimpleMode(JNIEnv *env, jobject thiz, jb
     if (distinguish != nullptr) {
         distinguish->simpleMode = is_simple;
     }
+}
+
+void ThrowJavaException(JNIEnv *env, const char *message) {
+    static jclass jcls = env->FindClass("java/lang/RuntimeException");
+    env->ThrowNew(jcls, message);
+}
+
+extern "C"
+JNIEXPORT jintArray JNICALL
+Java_com_palmpay_scan_code_NativeLib_getCodeBitMap(JNIEnv *env, jobject thiz, jstring contents,
+                                                   jint width, jint height,
+                                                   jstring barcode_format_name,
+                                                   jstring character_set_name, jint level,
+                                                   jint margin, jint black, jint white) {
+    const char *contents_ = env->GetStringUTFChars(contents, nullptr);
+    const char *barcode_format_name_ = env->GetStringUTFChars(barcode_format_name, nullptr);
+    const char *character_set_name_ = env->GetStringUTFChars(character_set_name, nullptr);
+    jintArray arr;
+    try {
+        arr = Utils::writerCode(env,
+                                contents_,
+                                width,
+                                height,
+                                ZXing::BarcodeFormatFromString(barcode_format_name_),
+                                ZXing::CharacterSetFromString(character_set_name_),
+                                level, margin, black, white);
+
+        env->ReleaseStringUTFChars(contents, contents_);
+        env->ReleaseStringUTFChars(contents, barcode_format_name_);
+        env->ReleaseStringUTFChars(contents, character_set_name_);
+    } catch (const std::exception &e) {
+        ThrowJavaException(env, e.what());
+    } catch (...) {
+        ThrowJavaException(env, "Unknown exception");
+    }
+    return arr;
 }

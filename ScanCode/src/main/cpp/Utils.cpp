@@ -1,10 +1,13 @@
 //
 // Created by Zwj on 2022/7/12.
 //
-
+#include "Utils.h"
+#include "XLog.h"
 #include <android/bitmap.h>
 #include <opencv2/imgproc/types_c.h>
-#include "Utils.h"
+#include <src/BitMatrix.h>
+#include <src/MultiFormatWriter.h>
+using namespace ZXing;
 
 jobject Utils::mat_to_bitmap(JNIEnv *env, cv::Mat &src, bool needPremultiplyAlpha) {
     auto java_bitmap_class = (jclass) env->FindClass("android/graphics/Bitmap");
@@ -63,3 +66,43 @@ jobject Utils::mat_to_bitmap(JNIEnv *env, cv::Mat &src, bool needPremultiplyAlph
         return bitmap;
     }
 }
+
+jintArray
+Utils::writerCode(JNIEnv *env, const std::string &contents, int width, int height,
+                  BarcodeFormat barcodeFormat,
+                  CharacterSet characterSet,
+                  int level, int margin, int black, int white) {
+
+
+    if (barcodeFormat == BarcodeFormat::None ||
+        characterSet == CharacterSet::Unknown) {
+        return nullptr;
+    }
+    MultiFormatWriter writer(barcodeFormat);
+    if (barcodeFormat == BarcodeFormat::Aztec || barcodeFormat == BarcodeFormat::PDF417 ||
+        barcodeFormat == BarcodeFormat::QRCode) {
+        writer.setEccLevel(level);
+    }
+
+    writer.setEncoding(characterSet);
+    writer.setMargin(margin);
+    BitMatrix matrix = writer.encode(contents, width, height);
+    if (matrix.empty()) {
+
+        return nullptr;
+    }
+
+    jintArray pixels = env->NewIntArray(width * height);
+    int index = 0;
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            int pix = matrix.get(j, i) ? black : white;
+            env->SetIntArrayRegion(pixels, index, 1, &pix);
+            index++;
+        }
+    }
+    return pixels;
+}
+
+
+

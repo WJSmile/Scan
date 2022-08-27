@@ -2,15 +2,17 @@
 // Created by Zwj on 2022/6/16.
 //
 
-
 #include "Distinguish.h"
 #include "XLog.h"
 
-CodeBean Distinguish::scan(Mat &qrcode_mat) {
+CodeBean Distinguish::zbarScan(Mat &qrcode_mat) {
+    CodeBean codeBean;
+    if (imageScanner == nullptr) {
+        return codeBean;
+    }
     int width = qrcode_mat.cols;
     int height = qrcode_mat.rows;
     auto *raw = (uchar *) qrcode_mat.data;
-    CodeBean codeBean;
     Image imageZbar(width, height, "Y800", raw, width * height);
     imageScanner->scan(imageZbar); //扫描条码
 
@@ -59,7 +61,7 @@ void Distinguish::getBarCode(Mat &src, vector<CodeBean> &codeBeans) {
 
             warpPerspective(src, result, m, cv::Size(400, 200), INTER_LINEAR);
 
-            CodeBean codeBean = scan(result);
+            CodeBean codeBean = zbarScan(result);
             if (!codeBean.code.empty()) {
                 RotatedRect rectPoint = minAreaRect(Mat(points));
                 codeBean.center = rectPoint.center;
@@ -105,6 +107,7 @@ void Distinguish::getQrCode(Mat &src, vector<CodeBean> &codeBeans) {
 
 void Distinguish::release() {
 
+    mux.lock();
     if (!qrCodes->empty()) {
         qrCodes->clear();
     }
@@ -121,10 +124,11 @@ void Distinguish::release() {
     detector = nullptr;
 
     brcodeDetector.release();
-    detector = nullptr;
+    brcodeDetector = nullptr;
 
     delete javaCallHelper;
     javaCallHelper = nullptr;
+    mux.unlock();
 }
 
 
@@ -150,6 +154,9 @@ Distinguish::Distinguish(const string &detect_prototxt, const string &detect_caf
 
 
 void Distinguish::zxingScan(Mat &qrcode, vector<CodeBean> &codeBeans) {
+    if(hints== nullptr){
+        return;
+    }
     cvtColor(qrcode, qrcode, COLOR_BGR2BGRA);
 
     auto *image = new ZXing::ImageView(qrcode.data, qrcode.cols, qrcode.rows,
@@ -194,7 +201,9 @@ void Distinguish::zxingScan(Mat &qrcode, vector<CodeBean> &codeBeans) {
 }
 
 jobject Distinguish::decode(JNIEnv *env, ImageData *imageData) {
+    mux.lock();
     if (qrCodes == nullptr) {
+        mux.unlock();
         return nullptr;
     }
 
@@ -229,9 +238,11 @@ jobject Distinguish::decode(JNIEnv *env, ImageData *imageData) {
 
     if (javaCallHelper != nullptr) {
         if (!qrCodes->empty()) {
+            mux.unlock();
             return javaCallHelper->codeBeanToJava(env, *qrCodes);
         }
     }
+    mux.unlock();
     return nullptr;
 }
 
