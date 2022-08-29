@@ -87,16 +87,36 @@ Java_com_palmpay_scan_code_NativeLib_scanCode(JNIEnv *env, jobject thiz, jbyteAr
     Distinguish *distinguish = GetDistinguishFromObj(env, thiz);
     jobject obj = nullptr;
     if (distinguish != nullptr) {
-        auto *imageData = new ImageData();
         jbyte *bytes_ = env->GetByteArrayElements(bytes, nullptr);
-        imageData->data = bytes_;
-        imageData->height = height;
-        imageData->width = width;
-        obj = distinguish->decode(env, imageData);
+
+        Mat src(height + height / 2,
+                width, CV_8UC1,
+                (uchar *) bytes_);
+
+        cvtColor(src, src, COLOR_YUV2GRAY_420);
+        rotate(src, src, ROTATE_90_CLOCKWISE);
+        obj = distinguish->decode(env, src);
+        src.release();
         env->ReleaseByteArrayElements(bytes, bytes_, 0);
     }
     return obj;
 }
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_com_palmpay_scan_code_NativeLib_scanCodeFormBitMap(JNIEnv *env, jobject thiz, jobject bitmap) {
+    Distinguish *distinguish = GetDistinguishFromObj(env, thiz);
+    jobject obj = nullptr;
+    if (distinguish != nullptr) {
+        Mat src;
+        Utils::BitmapToMat(env,bitmap,src);
+        cvtColor(src, src, COLOR_RGBA2GRAY);
+        obj = distinguish->decode(env, src);
+        src.release();
+    }
+    return  obj;
+}
+
 
 extern "C"
 JNIEXPORT jobject JNICALL
@@ -106,14 +126,23 @@ Java_com_palmpay_scan_code_NativeLib_scanCodeCut(JNIEnv *env, jobject thiz, jbyt
     Distinguish *distinguish = GetDistinguishFromObj(env, thiz);
     jobject obj = nullptr;
     if (distinguish != nullptr) {
-        auto *imageData = new ImageData();
         jbyte *bytes_ = env->GetByteArrayElements(bytes, nullptr);
-        imageData->data = bytes_;
-        imageData->height = height;
-        imageData->width = width;
-        imageData->boxTop = box_top;
-        imageData->boxWidth = box_width;
-        obj = distinguish->decode(env, imageData);
+        Mat src(height + height / 2,
+                width, CV_8UC1,
+                (uchar *) bytes_);
+
+        cvtColor(src, src, COLOR_YUV2GRAY_420);
+        rotate(src, src, ROTATE_90_CLOCKWISE);
+
+        if (box_width != 0 && box_top != 0) {
+            Rect rect = Rect(Point((src.cols - box_width) / 2,
+                                   box_top),
+                             Point((src.cols - box_width) / 2 +
+                                           box_width, box_top + box_width));
+            src = src(rect);
+        }
+        obj = distinguish->decode(env, src);
+        src.release();
         env->ReleaseByteArrayElements(bytes, bytes_, 0);
     }
     return obj;

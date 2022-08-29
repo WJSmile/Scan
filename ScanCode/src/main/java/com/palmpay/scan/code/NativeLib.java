@@ -1,6 +1,8 @@
 package com.palmpay.scan.code;
 
 
+import android.graphics.Bitmap;
+
 import com.palmpay.scan.bean.CodeBean;
 import com.palmpay.scan.bean.CodeData;
 
@@ -19,6 +21,8 @@ public class NativeLib {
     public native void setSimpleMode(boolean isSimple);
 
     public native ArrayList<CodeBean> scanCode(byte[] bytes, int width, int height);
+
+    public native ArrayList<CodeBean> scanCodeFormBitMap(Bitmap bitmap);
 
     public native ArrayList<CodeBean> scanCodeCut(byte[] bytes, int width, int height, int boxWidth, int boxTop);
 

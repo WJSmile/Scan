@@ -16,7 +16,7 @@ class Utils {
 public:
     static jobject mat_to_bitmap(JNIEnv *env, cv::Mat &src, bool needPremultiplyAlpha);
 
-
+    static void BitmapToMat(JNIEnv *env, jobject bitmap, cv::Mat &mat);
     static jobject writerCode(JNIEnv *env ,const std::string &contents, int width, int height,
                ZXing::BarcodeFormat barcodeFormat,
                ZXing::CharacterSet characterSet = ZXing::CharacterSet::UTF8, int level = -1,

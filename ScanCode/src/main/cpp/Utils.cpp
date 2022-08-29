@@ -108,5 +108,28 @@ Utils::writerCode(JNIEnv *env, const std::string &contents, int width, int heigh
     return env->NewObject(java_code_class, code_mid, pixels, matrix.width(), matrix.height());
 }
 
+void Utils::BitmapToMat(JNIEnv *env, jobject bitmap, cv::Mat &mat) {
+    AndroidBitmapInfo bmInfo;
+    if (AndroidBitmap_getInfo(env, bitmap, &bmInfo) != ANDROID_BITMAP_RESULT_SUCCESS) {
+        XLOGE("nBitmapToMat: get bitmap info error");
+        return;
+    }
+
+    void *pixels = nullptr;
+    CV_Assert(AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0);
+
+    if (bmInfo.format == ANDROID_BITMAP_FORMAT_RGBA_8888 ||
+        bmInfo.format == ANDROID_BITMAP_FORMAT_RGBA_4444 ||
+        bmInfo.format == ANDROID_BITMAP_FORMAT_RGBA_F16) {
+        XLOGE("nBitmapToMat: RGB_8888 -> CV_8UC4");
+        mat = cv::Mat((int) bmInfo.height, (int) bmInfo.width, CV_8UC4, pixels);
+    } else {
+        XLOGE("nBitmapToMat: RGB_565 -> CV_8UC3");
+        mat = cv::Mat((int) bmInfo.height, (int) bmInfo.width, CV_8UC3, pixels);
+    }
+
+
+}
+
 
 

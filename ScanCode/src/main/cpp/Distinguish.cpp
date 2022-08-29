@@ -200,7 +200,9 @@ void Distinguish::zxingScan(Mat &qrcode, vector<CodeBean> &codeBeans) {
 
 }
 
-jobject Distinguish::decode(JNIEnv *env, ImageData *imageData) {
+jobject
+Distinguish::decode(JNIEnv *env, Mat &src) {
+
     mux.lock();
     if (qrCodes == nullptr) {
         mux.unlock();
@@ -208,22 +210,6 @@ jobject Distinguish::decode(JNIEnv *env, ImageData *imageData) {
     }
 
     qrCodes->clear();
-
-    Mat src(imageData->height + imageData->height / 2,
-            imageData->width, CV_8UC1,
-            (uchar *) imageData->data);
-
-    cvtColor(src, src, COLOR_YUV2GRAY_420);
-    rotate(src, src, ROTATE_90_CLOCKWISE);
-
-    if (imageData->boxWidth != 0 && imageData->boxTop != 0) {
-        Rect rect = Rect(Point((src.cols - imageData->boxWidth) / 2,
-                               imageData->boxTop),
-                         Point((src.cols - imageData->boxWidth) / 2 +
-                               imageData->boxWidth, imageData->boxTop + imageData->boxWidth));
-
-        src = src(rect);
-    }
 
     getQrCode(src, *qrCodes);
 
@@ -233,8 +219,6 @@ jobject Distinguish::decode(JNIEnv *env, ImageData *imageData) {
         zxingScan(src, *qrCodes);
     }
 
-    delete imageData;
-    src.release();
 
     if (javaCallHelper != nullptr) {
         if (!qrCodes->empty()) {
@@ -355,6 +339,10 @@ Distinguish::getCodeTypeString(zbar_symbol_type_e zbarType, ZXing::BarcodeFormat
     }
     return "None";
 }
+
+
+
+
 
 
 

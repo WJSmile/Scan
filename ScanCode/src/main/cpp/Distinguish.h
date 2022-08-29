@@ -28,7 +28,7 @@ public:
     Distinguish(const string &detect_prototxt, const string &detect_caffe_model,
                 const string &sr_prototxt, const string &sr_caffe_model);
 
-    virtual jobject decode(JNIEnv *env, ImageData *imageData);
+    virtual jobject decode(JNIEnv *env, Mat &src);
 
     virtual CodeBean zbarScan(Mat &qrcode_mat);
 
