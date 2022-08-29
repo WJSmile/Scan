@@ -7,6 +7,7 @@
 #include <opencv2/imgproc/types_c.h>
 #include <src/BitMatrix.h>
 #include <src/MultiFormatWriter.h>
+
 using namespace ZXing;
 
 jobject Utils::mat_to_bitmap(JNIEnv *env, cv::Mat &src, bool needPremultiplyAlpha) {
@@ -67,7 +68,7 @@ jobject Utils::mat_to_bitmap(JNIEnv *env, cv::Mat &src, bool needPremultiplyAlph
     }
 }
 
-jintArray
+jobject
 Utils::writerCode(JNIEnv *env, const std::string &contents, int width, int height,
                   BarcodeFormat barcodeFormat,
                   CharacterSet characterSet,
@@ -82,26 +83,29 @@ Utils::writerCode(JNIEnv *env, const std::string &contents, int width, int heigh
     if (barcodeFormat == BarcodeFormat::Aztec || barcodeFormat == BarcodeFormat::PDF417 ||
         barcodeFormat == BarcodeFormat::QRCode) {
         writer.setEccLevel(level);
+        writer.setEncoding(characterSet);
     }
 
-    writer.setEncoding(characterSet);
     writer.setMargin(margin);
     BitMatrix matrix = writer.encode(contents, width, height);
     if (matrix.empty()) {
-
         return nullptr;
     }
+    jintArray pixels = env->NewIntArray(matrix.height() * matrix.width());
 
-    jintArray pixels = env->NewIntArray(width * height);
     int index = 0;
-    for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j) {
+    for (int i = 0; i < matrix.height(); ++i) {
+        for (int j = 0; j < matrix.width(); ++j) {
             int pix = matrix.get(j, i) ? black : white;
             env->SetIntArrayRegion(pixels, index, 1, &pix);
             index++;
         }
     }
-    return pixels;
+    auto java_code_class = env->FindClass("com/palmpay/scan/bean/CodeData");
+
+    jmethodID code_mid = env->GetMethodID(java_code_class,
+                                          "<init>", "([III)V");
+    return env->NewObject(java_code_class, code_mid, pixels, matrix.width(), matrix.height());
 }
 
 

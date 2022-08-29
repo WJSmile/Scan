@@ -2,6 +2,7 @@ package com.palmpay.scan.utils
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.util.Log
 import com.palmpay.scan.bean.ScanCodeType
 import com.palmpay.scan.code.NativeLib
 
@@ -12,7 +13,7 @@ object CodeUtils {
         text: String,
         width: Int,
         height: Int,
-        barcodeFormat: ScanCodeType = ScanCodeType.QRCODE,
+        barcodeFormat: ScanCodeType = ScanCodeType.QRCode,
         characterSet: String = "UTF-8",
         level: Int = -1,
         margin: Int = 0,
@@ -20,7 +21,7 @@ object CodeUtils {
         white: Int = Color.WHITE
     ): Bitmap? {
         try {
-            val array = nativeLib.getCodeBitMap(
+            val codeData = nativeLib.getCodeBitMap(
                 text,
                 width,
                 height,
@@ -31,8 +32,8 @@ object CodeUtils {
                 black,
                 white
             )
-            if (array != null) {
-                return Bitmap.createBitmap(array, width, height, Bitmap.Config.ARGB_8888)
+            if (codeData != null) {
+                return Bitmap.createBitmap(codeData.data, codeData.width, codeData.height, Bitmap.Config.ARGB_8888)
             }
         } catch (e: Exception) {
             e.printStackTrace()

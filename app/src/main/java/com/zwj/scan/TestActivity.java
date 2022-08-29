@@ -38,7 +38,7 @@ public class TestActivity extends AppCompatActivity {
         PermissionX.init(this).permissions( Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE).request((allGranted, grantedList, deniedList) -> {
             if (allGranted) {
                 new Thread(() -> {
-                    Bitmap bitmap = CodeUtils.INSTANCE.create("Hello", 200, 200, ScanCodeType.DataMatrix, "UTF-8", -1, 0, Color.BLACK, Color.WHITE);
+                    Bitmap bitmap = CodeUtils.INSTANCE.create("Hello Word", 200, 200, ScanCodeType.Aztec, "UTF-8", -1, 0, Color.BLACK, Color.WHITE);
                     runOnUiThread(() -> {
                         if (bitmap != null) {
                             imageView.setImageBitmap(bitmap);

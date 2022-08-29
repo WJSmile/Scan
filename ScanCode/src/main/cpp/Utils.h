@@ -17,7 +17,7 @@ public:
     static jobject mat_to_bitmap(JNIEnv *env, cv::Mat &src, bool needPremultiplyAlpha);
 
 
-    static jintArray writerCode(JNIEnv *env ,const std::string &contents, int width, int height,
+    static jobject writerCode(JNIEnv *env ,const std::string &contents, int width, int height,
                ZXing::BarcodeFormat barcodeFormat,
                ZXing::CharacterSet characterSet = ZXing::CharacterSet::UTF8, int level = -1,
                int margin = -1,

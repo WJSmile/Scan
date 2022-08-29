@@ -19,11 +19,11 @@ enum class ScanCodeType(val type: Int) {
     DataMatrix(15),
     ITF(16),
     Codabar(17),
-    CODE39(18),
+    Code39(18),
     PDF417(19),
-    QRCODE(20),
-    CODE93(21),
-    CODE128(22),
+    QRCode(20),
+    Code93(21),
+    Code128(22),
     MaxiCode(23),
     MicroQRCode(24)
 }

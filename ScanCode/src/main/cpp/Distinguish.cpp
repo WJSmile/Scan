@@ -300,15 +300,15 @@ Distinguish::getCodeTypeString(zbar_symbol_type_e zbarType, ZXing::BarcodeFormat
             case ZBAR_CODABAR:
                 return "Codabar";
             case ZBAR_CODE39:
-                return "CODE39";
+                return "Code39";
             case ZBAR_PDF417:
                 return "PDF417";
             case ZBAR_QRCODE:
-                return "QRCODE";
+                return "QRCode";
             case ZBAR_CODE93:
-                return "CODE93";
+                return "Code93";
             case ZBAR_CODE128:
-                return "CODE128";
+                return "Code128";
             default:
                 return "None";
         }
@@ -320,11 +320,11 @@ Distinguish::getCodeTypeString(zbar_symbol_type_e zbarType, ZXing::BarcodeFormat
             case ZXing::BarcodeFormat::Codabar:
                 return "Codabar";
             case ZXing::BarcodeFormat::Code39:
-                return "CODE39";
+                return "Code39";
             case ZXing::BarcodeFormat::Code93:
-                return "CODE93";
+                return "Code93";
             case ZXing::BarcodeFormat::Code128:
-                return "CODE128";
+                return "Code128";
             case ZXing::BarcodeFormat::DataBar:
                 return "DataBar";
             case ZXing::BarcodeFormat::DataBarExpanded:
@@ -342,7 +342,7 @@ Distinguish::getCodeTypeString(zbar_symbol_type_e zbarType, ZXing::BarcodeFormat
             case ZXing::BarcodeFormat::PDF417:
                 return "PDF417";
             case ZXing::BarcodeFormat::QRCode:
-                return "QRCODE";
+                return "QRCode";
             case ZXing::BarcodeFormat::UPCA:
                 return "UPCA";
             case ZXing::BarcodeFormat::UPCE:

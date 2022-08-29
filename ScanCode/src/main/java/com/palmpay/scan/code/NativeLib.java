@@ -2,6 +2,7 @@ package com.palmpay.scan.code;
 
 
 import com.palmpay.scan.bean.CodeBean;
+import com.palmpay.scan.bean.CodeData;
 
 import java.util.ArrayList;
 
@@ -21,15 +22,15 @@ public class NativeLib {
 
     public native ArrayList<CodeBean> scanCodeCut(byte[] bytes, int width, int height, int boxWidth, int boxTop);
 
-    public native int[] getCodeBitMap(String contents,
-                                      int width,
-                                      int height,
-                                      String barcodeFormatName,
-                                      String characterSetName,
-                                      int level,
-                                      int margin,
-                                      int black,
-                                      int white);
+    public native CodeData getCodeBitMap(String contents,
+                                         int width,
+                                         int height,
+                                         String barcodeFormatName,
+                                         String characterSetName,
+                                         int level,
+                                         int margin,
+                                         int black,
+                                         int white);
 
     public native void release();
 }
