@@ -6,7 +6,6 @@
 #define SCAN_DISTINGUISH_H
 
 #include <list>
-#include "ImageData.h"
 #include "XThread.h"
 #include "JavaCallHelper.h"
 #include <zbar/zbar.h>
