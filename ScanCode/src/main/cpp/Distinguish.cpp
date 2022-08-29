@@ -99,7 +99,7 @@ void Distinguish::getQrCode(Mat &src, vector<CodeBean> &codeBeans) {
         RotatedRect rectPoint = minAreaRect(Mat(vPoints[i]));
         codeBean.center = rectPoint.center;
         codeBean.rect = rectPoint.boundingRect();
-        codeBean.type = "QRCODE";
+        codeBean.type = "QRCode";
         codeBean.code = strDecoded[i];
         codeBeans.push_back(codeBean);
     }
