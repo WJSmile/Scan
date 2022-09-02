@@ -7,13 +7,13 @@ function build_opencv_modules
 {
     ARCH_ABI=$1
     API_LEVEL=$2
-
     cmake \
     -DOPENCV_EXTRA_MODULES_PATH=/Users/zwj/work/opencv_contrib/modules \
-    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_PATH \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_FLAGS_RELEASE=-g0 \
+    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_PATH \
     -DWITH_OPENCL=OFF \
-    -DWITH_OPENCL_SVM=ON \
+    -DWITH_OPENCL_SVM=OFF \
     -DANDROID_NDK=$NDK_PATH  \
     -DCMAKE_CXX_FLAGS=-std=c++11 \
     -DANDROID_ABI=$ARCH_ABI \

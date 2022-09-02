@@ -5,8 +5,6 @@
 #ifndef SCAN_DISTINGUISH_H
 #define SCAN_DISTINGUISH_H
 
-#include <list>
-#include "XThread.h"
 #include "JavaCallHelper.h"
 #include <zbar/zbar.h>
 #include <src/MultiFormatReader.h>

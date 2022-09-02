@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.18.1)
 # Declares and names the project.
 
 project("scancode")
-
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g0")
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
