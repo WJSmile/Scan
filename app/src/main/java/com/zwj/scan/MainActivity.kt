@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         ImmersionBar.with(this).transparentBar().init()
         scanView = findViewById(R.id.scan_view)
-        scanView.setScanMode(ScanMode.SIMPLE)
+        scanView.setScanMode(ScanMode.MANY)
         scanView.setOnScanListener(object : OnScanListener {
 
             override fun onResult(result: List<CodeBean>): Boolean {

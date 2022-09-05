@@ -7,7 +7,13 @@ cmake_minimum_required(VERSION 3.18.1)
 # Declares and names the project.
 
 project("scancode")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -frtti")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -ffunction-sections -fdata-sections -fvisibility=hidden")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
+
+
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Os  -Wl,--exclude-libs,ALL -Wl,--gc-sections,-s -Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/version_script.txt")
+
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
