@@ -51,23 +51,23 @@ add_subdirectory(src/main/cpp/zxing)
 include_directories(src/main/cpp/zxing)
 
 add_library(libiconv
-        SHARED
+        STATIC
         IMPORTED)
 set_target_properties(libiconv
         PROPERTIES IMPORTED_LOCATION
-        ${JNI_LIBS_DIR}/${ANDROID_ABI}/libiconv.so)
+        ${JNI_LIBS_DIR}/${ANDROID_ABI}/libiconv.a)
 
 
 add_library(libzbarjni
-        SHARED
+        STATIC
         IMPORTED)
 set_target_properties(libzbarjni
         PROPERTIES IMPORTED_LOCATION
-        ${JNI_LIBS_DIR}/${ANDROID_ABI}/libzbarjni.so)
+        ${JNI_LIBS_DIR}/${ANDROID_ABI}/libzbarjni.a)
 
 
 add_library(libcpufeatures
-        SHARED
+        STATIC
         IMPORTED)
 set_target_properties(libcpufeatures
         PROPERTIES IMPORTED_LOCATION
@@ -75,7 +75,7 @@ set_target_properties(libcpufeatures
 
 
 add_library(libittnotify
-        SHARED
+        STATIC
         IMPORTED)
 set_target_properties(libittnotify
         PROPERTIES IMPORTED_LOCATION
@@ -83,7 +83,7 @@ set_target_properties(libittnotify
 
 
 add_library(libopencv_world
-        SHARED
+        STATIC
         IMPORTED)
 set_target_properties(libopencv_world
         PROPERTIES IMPORTED_LOCATION
@@ -91,21 +91,21 @@ set_target_properties(libopencv_world
 
 
 add_library(liblibopenjp2
-        SHARED
+        STATIC
         IMPORTED)
 set_target_properties(liblibopenjp2
         PROPERTIES IMPORTED_LOCATION
         ${JNI_LIBS_DIR}/${ANDROID_ABI}/liblibopenjp2.a)
 
 add_library(libtegra_hal
-        SHARED
+        STATIC
         IMPORTED)
 set_target_properties(libtegra_hal
         PROPERTIES IMPORTED_LOCATION
         ${JNI_LIBS_DIR}/${ANDROID_ABI}/libtegra_hal.a)
 
 add_library(libzlib
-        SHARED
+        STATIC
         IMPORTED)
 set_target_properties(libzlib
         PROPERTIES IMPORTED_LOCATION
@@ -113,7 +113,7 @@ set_target_properties(libzlib
 
 
 add_library(liblibprotobuf
-        SHARED
+        STATIC
         IMPORTED)
 set_target_properties(liblibprotobuf
         PROPERTIES IMPORTED_LOCATION
@@ -125,8 +125,8 @@ include_directories(${JNI_LIBS_DIR}/include)
 target_link_libraries(
         scancode
         ZXing
-        libiconv
         libzbarjni
+        libiconv
         libopencv_world
         liblibprotobuf
         libtegra_hal

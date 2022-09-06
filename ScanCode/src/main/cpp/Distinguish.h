@@ -6,7 +6,7 @@
 #define SCAN_DISTINGUISH_H
 
 #include "JavaCallHelper.h"
-#include <zbar/zbar.h>
+#include <zbar.h>
 #include <src/MultiFormatReader.h>
 #include <src/BinaryBitmap.h>
 #include <src/Result.h>
