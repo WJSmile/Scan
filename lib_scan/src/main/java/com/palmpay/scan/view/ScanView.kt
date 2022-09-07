@@ -41,7 +41,6 @@ class ScanView @JvmOverloads constructor(
     init {
         lifecycle = (context as FragmentActivity).lifecycle
 
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             cameraXView = CameraXView(context)
             addView(cameraXView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))

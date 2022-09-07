@@ -4,19 +4,16 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Color
 import android.util.AttributeSet
-import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
-import androidx.fragment.app.FragmentActivity
 import com.palmpay.scan.bean.CodeBean
 import com.palmpay.scan.utils.toPx
-import com.zwj.scancode.R
+import com.palmpay.scan.R
 
 class CodePointView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0

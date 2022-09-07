@@ -1,4 +1,4 @@
-package com.zwj.scancode
+package com.palmpay.scan
 
 import org.junit.Test
 

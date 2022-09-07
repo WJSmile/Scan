@@ -7,9 +7,8 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
 import com.palmpay.scan.utils.toPx
-import com.zwj.scancode.R
+import com.palmpay.scan.R
 
 class BoxView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0

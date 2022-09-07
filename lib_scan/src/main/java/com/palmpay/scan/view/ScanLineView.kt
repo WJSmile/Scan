@@ -17,7 +17,7 @@ import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.palmpay.scan.utils.toPx
-import com.zwj.scancode.R
+import com.palmpay.scan.R
 
 
 @SuppressLint("UseCompatLoadingForDrawables")

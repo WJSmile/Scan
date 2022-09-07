@@ -44,5 +44,5 @@ dependencies {
     implementation 'com.guolindev.permissionx:permissionx:1.6.4'
     implementation 'com.geyifeng.immersionbar:immersionbar:3.2.2'
     implementation 'com.geyifeng.immersionbar:immersionbar-ktx:3.2.2'
-    implementation project(":ScanCode")
+    implementation project(":lib_scan")
 }
