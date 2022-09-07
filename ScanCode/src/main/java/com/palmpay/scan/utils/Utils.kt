@@ -2,6 +2,8 @@ package com.palmpay.scan.utils
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.camera.core.ImageProxy
 import java.io.File
 import java.io.FileOutputStream
@@ -11,6 +13,7 @@ import kotlin.experimental.inv
 
 object Utils {
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun yuv420888ToNv21(image: ImageProxy): ByteArray? {
         val width = image.width
         val height = image.height

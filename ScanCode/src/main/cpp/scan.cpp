@@ -86,8 +86,8 @@ Java_com_palmpay_scan_code_NativeLib_scanCode(JNIEnv *env, jobject thiz, jbyteAr
                                               jint width, jint height) {
     Distinguish *distinguish = GetDistinguishFromObj(env, thiz);
     jobject obj = nullptr;
+    jbyte *bytes_ = env->GetByteArrayElements(bytes, nullptr);
     if (distinguish != nullptr) {
-        jbyte *bytes_ = env->GetByteArrayElements(bytes, nullptr);
 
         Mat src(height + height / 2,
                 width, CV_8UC1,
@@ -97,8 +97,8 @@ Java_com_palmpay_scan_code_NativeLib_scanCode(JNIEnv *env, jobject thiz, jbyteAr
         rotate(src, src, ROTATE_90_CLOCKWISE);
         obj = distinguish->decode(env, src);
         src.release();
-        env->ReleaseByteArrayElements(bytes, bytes_, 0);
     }
+    env->ReleaseByteArrayElements(bytes, bytes_, 0);
     return obj;
 }
 
@@ -125,8 +125,8 @@ Java_com_palmpay_scan_code_NativeLib_scanCodeCut(JNIEnv *env, jobject thiz, jbyt
                                                  jint box_top) {
     Distinguish *distinguish = GetDistinguishFromObj(env, thiz);
     jobject obj = nullptr;
+    jbyte *bytes_ = env->GetByteArrayElements(bytes, nullptr);
     if (distinguish != nullptr) {
-        jbyte *bytes_ = env->GetByteArrayElements(bytes, nullptr);
         Mat src(height + height / 2,
                 width, CV_8UC1,
                 (uchar *) bytes_);
@@ -143,8 +143,8 @@ Java_com_palmpay_scan_code_NativeLib_scanCodeCut(JNIEnv *env, jobject thiz, jbyt
         }
         obj = distinguish->decode(env, src);
         src.release();
-        env->ReleaseByteArrayElements(bytes, bytes_, 0);
     }
+    env->ReleaseByteArrayElements(bytes, bytes_, 0);
     return obj;
 }
 

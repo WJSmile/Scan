@@ -3,6 +3,7 @@ package com.palmpay.scan.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Build
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
@@ -12,7 +13,6 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
-import com.palmpay.scan.bean.ScanCodeType
 import com.palmpay.scan.bean.ScanMode
 import com.palmpay.scan.bean.ScanType
 import com.palmpay.scan.callback.OnScanListener
@@ -25,12 +25,14 @@ class ScanView @JvmOverloads constructor(
 
 
     private var nativeLib: NativeLib? = NativeLib()
-    private val cameraView: CameraView
+    private var cameraXView: CameraXView? = null
     private var codePointView: CodePointView? = null
     private val boxView: BoxView
 
     private val lifecycle: Lifecycle
     private var onScanListener: OnScanListener? = null
+
+    private var cameraView: CameraView? = null
 
     private var scanType: ScanType = ScanType.SCAN_FULL_SCREEN
 
@@ -39,8 +41,14 @@ class ScanView @JvmOverloads constructor(
     init {
         lifecycle = (context as FragmentActivity).lifecycle
 
-        cameraView = CameraView(context)
-        addView(cameraView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            cameraXView = CameraXView(context)
+            addView(cameraXView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+        } else {
+            cameraView = CameraView(context)
+            addView(cameraView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+        }
 
         codePointView = CodePointView(context)
         addView(codePointView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
@@ -58,37 +66,72 @@ class ScanView @JvmOverloads constructor(
                 paths[3]
             )
         }
-        cameraView.setOnAnalyzerListener {
-            if (!isPause) {
-                val codeBeans = nativeLib?.scanCode(
-                    Utils.yuv420888ToNv21(it), it.width, it.height
-                )
-                if (!codeBeans.isNullOrEmpty()) {
-                    isPause = true
-                    if (lifecycle is LifecycleRegistry) {
-                        context.runOnUiThread {
-                            lifecycle.currentState = Lifecycle.State.CREATED
-                        }
-                    }
-                    context.runOnUiThread {
-                        codePointView?.setQrCodes(codeBeans)
-                    }
-                    onScanListener?.onResult(codeBeans)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            cameraXView?.setOnAnalyzerListener {
+                if (isPause) {
+                    it.close()
+                    return@setOnAnalyzerListener
                 }
+                if (scanType == ScanType.SCAN_FULL_SCREEN) {
+                    val codeBeans = nativeLib?.scanCode(
+                        Utils.yuv420888ToNv21(it), it.width, it.height
+                    )
+                    if (!codeBeans.isNullOrEmpty()) {
+                        isPause = true
+                        if (lifecycle is LifecycleRegistry) {
+                            context.runOnUiThread {
+                                lifecycle.currentState = Lifecycle.State.CREATED
+                            }
+                        }
+                        context.runOnUiThread {
+                            codePointView?.setQrCodes(codeBeans)
+                        }
+                        onScanListener?.onResult(codeBeans)
+                    }
 
-            } else if (scanType == ScanType.SCAN_BOX) {
+                } else if (scanType == ScanType.SCAN_BOX) {
 
-                val codeBeans = nativeLib?.scanCodeCut(
-                    Utils.yuv420888ToNv21(it), it.width, it.height,
-                    boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
-                )
-                if (!codeBeans.isNullOrEmpty()) {
-                    isPause = onScanListener?.onResult(codeBeans) == true
+                    val codeBeans = nativeLib?.scanCodeCut(
+                        Utils.yuv420888ToNv21(it), it.width, it.height,
+                        boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
+                    )
+                    if (!codeBeans.isNullOrEmpty()) {
+                        isPause = onScanListener?.onResult(codeBeans) == true
 
+                    }
+                }
+                it.close()
+            }
+        } else {
+            cameraView?.setOnAnalyzerListener { data ->
+                if (isPause) {
+                    return@setOnAnalyzerListener
+                }
+                if (scanType == ScanType.SCAN_FULL_SCREEN) {
+                    val codeBeans = nativeLib?.scanCode(
+                        data.data, data.width, data.height
+                    )
+                    if (!codeBeans.isNullOrEmpty()) {
+                        isPause = true
+                        cameraView?.stop()
+                        context.runOnUiThread {
+                            codePointView?.setQrCodes(codeBeans)
+                        }
+                        onScanListener?.onResult(codeBeans)
+                    }
+                } else if (scanType == ScanType.SCAN_BOX) {
+                    val codeBeans = nativeLib?.scanCodeCut(
+                        data.data, data.width, data.height,
+                        boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
+                    )
+                    if (!codeBeans.isNullOrEmpty()) {
+                        isPause = onScanListener?.onResult(codeBeans) == true
+
+                    }
                 }
             }
-            it.close()
         }
+
 
         codePointView?.setCancelButtonListener {
             isPause = false
@@ -116,14 +159,17 @@ class ScanView @JvmOverloads constructor(
      * 释放内存，不用时，请一定调用
      */
     fun release() {
-        this.isPause = true
-        cameraView.setOnAnalyzerListener(null)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            cameraXView?.setOnAnalyzerListener(null)
+            cameraXView?.unbindAll()
+        } else {
+            cameraView?.release()
+        }
         nativeLib?.release()
         nativeLib = null
         codePointView?.release()
         codePointView = null
         boxView.release()
-        cameraView.unbindAll()
     }
 
 

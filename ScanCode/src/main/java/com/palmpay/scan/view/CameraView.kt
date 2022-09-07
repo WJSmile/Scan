@@ -1,85 +1,75 @@
 package com.palmpay.scan.view
 
 import android.content.Context
+import android.hardware.Camera
+import android.os.Looper
 import android.util.AttributeSet
-import android.util.Size
+import android.view.SurfaceView
 import android.widget.FrameLayout
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
-import com.google.common.util.concurrent.ListenableFuture
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import com.palmpay.scan.bean.CameraDataBean
 
 class CameraView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
-) : FrameLayout(context, attrs) {
+) : FrameLayout(context, attrs) , Camera.PreviewCallback {
 
-    private val previewView: PreviewView
-
-    private val cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
-
-    private var imageAnalysis: ImageAnalysis? = null
-
-    private val preview: Preview = Preview.Builder().build()
-
-    private val cameraSelector: CameraSelector = CameraSelector.Builder()
-        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-        .build()
-
-    private val executorService: ExecutorService = Executors.newFixedThreadPool(2)
+    private val surfaceView = SurfaceView(context)
 
     private var camera: Camera? = null
 
 
-    private var analyzerListener: ((ImageProxy) -> Unit)? = null
+    private var analyzerListener: ((CameraDataBean) -> Unit)? = null
 
     init {
-
-        previewView = PreviewView(context)
-        addView(previewView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
-
-        cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+        addView(surfaceView)
 
         post {
-            imageAnalysis = ImageAnalysis.Builder()
-                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
-                .setTargetResolution(Size(width, height))
-                .build()
-
-            imageAnalysis?.setAnalyzer(executorService) { imageProxy ->
-                analyzerListener?.invoke(imageProxy)
-            }
-            initCamera()
+            Thread{
+                Looper.prepare()
+                initCamera()
+                Looper.loop()
+            }.start()
         }
+
     }
 
     private fun initCamera() {
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
+        camera = Camera.open()
+        val parameters = camera?.parameters
+        parameters?.setPictureSize(height, width)
+        parameters?.setPreviewSize(height, width)
 
-            preview.setSurfaceProvider(previewView.surfaceProvider)
-
-
-            camera = cameraProvider.bindToLifecycle(
-                (context as FragmentActivity),
-                cameraSelector,
-                imageAnalysis,
-                preview
-            )
-
-        }, ContextCompat.getMainExecutor(context))
+        parameters?.focusMode = Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE
+        camera?.parameters = parameters
+        camera?.setDisplayOrientation(90)
+        camera?.setPreviewCallback(this)
+        camera?.setPreviewDisplay(surfaceView.holder)
+        camera?.startPreview()
     }
 
 
-    fun setOnAnalyzerListener(action: ((ImageProxy) -> Unit)?) {
+    fun setOnAnalyzerListener(action: ((CameraDataBean) -> Unit)?) {
         this.analyzerListener = action
     }
 
-    fun unbindAll() {
-       cameraProviderFuture.get().unbindAll()
+    fun stop(){
+        camera?.stopPreview()
+    }
+
+    fun release() {
+        analyzerListener = null
+        camera?.setPreviewCallback(null)
+        camera?.release()
+        camera = null
+        surfaceView.destroyDrawingCache()
+    }
+
+    override fun onPreviewFrame(data: ByteArray?, camera: Camera?) {
+        analyzerListener?.invoke(
+            CameraDataBean(
+                data, this.camera?.parameters?.pictureSize?.width ?: 0,
+                this.camera?.parameters?.pictureSize?.height ?: 0
+            )
+        )
     }
 
 }
