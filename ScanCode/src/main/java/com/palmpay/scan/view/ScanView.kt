@@ -66,6 +66,25 @@ class ScanView @JvmOverloads constructor(
                 paths[3]
             )
         }
+
+
+        setCallBack()
+        codePointView?.setCancelButtonListener {
+            isPause = false
+            if (lifecycle is LifecycleRegistry) {
+                lifecycle.currentState = Lifecycle.State.RESUMED
+            }
+            onScanListener?.onCancel()
+        }
+
+        codePointView?.setPointButtonListener {
+            onScanListener?.onPointClick(it)
+        }
+
+        refreshStatus()
+    }
+
+    private fun setCallBack() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             cameraXView?.setOnAnalyzerListener {
                 if (isPause) {
@@ -78,12 +97,10 @@ class ScanView @JvmOverloads constructor(
                     )
                     if (!codeBeans.isNullOrEmpty()) {
                         isPause = true
-                        if (lifecycle is LifecycleRegistry) {
-                            context.runOnUiThread {
+                        (context as FragmentActivity).runOnUiThread {
+                            if (lifecycle is LifecycleRegistry) {
                                 lifecycle.currentState = Lifecycle.State.CREATED
                             }
-                        }
-                        context.runOnUiThread {
                             codePointView?.setQrCodes(codeBeans)
                         }
                         onScanListener?.onResult(codeBeans)
@@ -114,9 +131,10 @@ class ScanView @JvmOverloads constructor(
                     if (!codeBeans.isNullOrEmpty()) {
                         isPause = true
                         cameraView?.stop()
-                        context.runOnUiThread {
+                        (context as FragmentActivity).runOnUiThread {
                             codePointView?.setQrCodes(codeBeans)
                         }
+
                         onScanListener?.onResult(codeBeans)
                     }
                 } else if (scanType == ScanType.SCAN_BOX) {
@@ -131,21 +149,6 @@ class ScanView @JvmOverloads constructor(
                 }
             }
         }
-
-
-        codePointView?.setCancelButtonListener {
-            isPause = false
-            if (lifecycle is LifecycleRegistry) {
-                lifecycle.currentState = Lifecycle.State.RESUMED
-            }
-            onScanListener?.onCancel()
-        }
-
-        codePointView?.setPointButtonListener {
-            onScanListener?.onPointClick(it)
-        }
-
-        refreshStatus()
     }
 
     /**
