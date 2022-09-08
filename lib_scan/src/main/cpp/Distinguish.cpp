@@ -22,7 +22,7 @@ CodeBean Distinguish::zbarScan(Mat &qrcode_mat) {
         codeBean.code = symbol->get_data();
         codeBean.type = getCodeTypeString(symbol->get_type(), ZXing::BarcodeFormat::None);
     }
-    imageZbar.set_data(nullptr, 0);
+    imageScanner->recycle_image(imageZbar);
     return codeBean;
 }
 
