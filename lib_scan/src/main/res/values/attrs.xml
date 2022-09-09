@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ScanView">
+        <attr name="scanMode" >
+            <enum name="SIMPLE"/>
+            <enum name="MANY"/>
+        </attr>
+        <attr name="scanType">
+            <enum name="SCAN_FULL_SCREEN"/>
+            <enum name="SCAN_BOX"/>
+        </attr>
+        <attr name="cancelText" format="string"/>
+        <attr name="cancelTextColor" format="color"/>
+        <attr name="cancelTextSize" format="dimension"/>
+        <attr name="cancelTop" format="dimension"/>
+        <attr name="cancelLeft" format="dimension"/>
+        <attr name="pointViewRes" format="reference"/>
+        <attr name="pointSize" format="dimension"/>
+        <attr name="successColorRes" format="reference"/>
+        <attr name="size" format="dimension"/>
+        <attr name="round" format="dimension"/>
+        <attr name="mantleColor" format="color"/>
+        <attr name="boxStrokeColor" format="color"/>
+        <attr name="boxStrokeWidth" format="dimension"/>
+        <attr name="lineWidth" format="dimension"/>
+        <attr name="lineHeight" format="dimension"/>
+        <attr name="lineTop" format="dimension"/>
+        <attr name="lineColor" format="color"/>
+        <attr name="lineAnimatorDuration" format="integer"/>
+        <attr name="hornWidth" format="dimension"/>
+        <attr name="hornLength" format="dimension"/>
+        <attr name="hornColor" format="color"/>
+        <attr name="boxType" >
+            <enum name="ROUND" value="0"/>
+            <enum name="HORN" value="1"/>
+        </attr>
+        <attr name="animatorWidth" format="dimension"/>
+        <attr name="animatorHeight" format="dimension"/>
+        <attr name="animatorTime" format="integer"/>
+        <attr name="lineBitmap" format="reference"/>
+        <attr name="trailingBitmap" format="reference"/>
+    </declare-styleable>
+</resources>

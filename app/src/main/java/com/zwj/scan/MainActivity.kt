@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.gyf.immersionbar.ImmersionBar
 import com.palmpay.scan.bean.CodeBean
 import com.palmpay.scan.bean.ScanMode
+import com.palmpay.scan.bean.ScanType
 import com.palmpay.scan.callback.OnScanListener
 import com.palmpay.scan.view.ScanView
 
@@ -19,11 +20,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         ImmersionBar.with(this).transparentBar().init()
         scanView = findViewById(R.id.scan_view)
-        scanView.setScanMode(ScanMode.SIMPLE)
+        scanView.setScanMode(ScanMode.MANY)
+        scanView.setScanType(ScanType.SCAN_BOX)
         scanView.setOnScanListener(object : OnScanListener {
 
             override fun onResult(result: List<CodeBean>): Boolean {
-                Log.e(">>>>>>", (result[0].codeString))
+                Log.e(">>>>>>", (result[0].scanCodeType.name))
+                finish()
                 return true
             }
         })

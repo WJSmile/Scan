@@ -9,10 +9,13 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
+import androidx.annotation.RequiresApi
+import androidx.camera.core.ImageProxy
 import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
+import com.palmpay.scan.bean.CameraDataBean
 import com.palmpay.scan.bean.ScanMode
 import com.palmpay.scan.bean.ScanType
 import com.palmpay.scan.callback.OnScanListener
@@ -86,66 +89,77 @@ class ScanView @JvmOverloads constructor(
     private fun setCallBack() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             cameraXView?.setOnAnalyzerListener {
-                if (isPause) {
-                    it.close()
-                    return@setOnAnalyzerListener
-                }
-                if (scanType == ScanType.SCAN_FULL_SCREEN) {
-                    val codeBeans = nativeLib?.scanCode(
-                        Utils.yuv420888ToNv21(it), it.width, it.height
-                    )
-                    if (!codeBeans.isNullOrEmpty()) {
-                        isPause = true
-                        (context as FragmentActivity).runOnUiThread {
-                            if (lifecycle is LifecycleRegistry) {
-                                lifecycle.currentState = Lifecycle.State.CREATED
-                            }
-                            codePointView?.setQrCodes(codeBeans)
-                        }
-                        onScanListener?.onResult(codeBeans)
-                    }
-
-                } else if (scanType == ScanType.SCAN_BOX) {
-
-                    val codeBeans = nativeLib?.scanCodeCut(
-                        Utils.yuv420888ToNv21(it), it.width, it.height,
-                        boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
-                    )
-                    if (!codeBeans.isNullOrEmpty()) {
-                        isPause = onScanListener?.onResult(codeBeans) == true
-
-                    }
-                }
-                it.close()
+                setCameraXData(it)
             }
         } else {
             cameraView?.setOnAnalyzerListener { data ->
-                if (isPause) {
-                    return@setOnAnalyzerListener
-                }
-                if (scanType == ScanType.SCAN_FULL_SCREEN) {
-                    val codeBeans = nativeLib?.scanCode(
-                        data.data, data.width, data.height
-                    )
-                    if (!codeBeans.isNullOrEmpty()) {
-                        isPause = true
-                        cameraView?.stop()
-                        (context as FragmentActivity).runOnUiThread {
-                            codePointView?.setQrCodes(codeBeans)
-                        }
+                setCameraData(data)
+            }
+        }
+    }
 
-                        onScanListener?.onResult(codeBeans)
+    @Synchronized
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private fun setCameraXData(imageProxy: ImageProxy) {
+        if (isPause) {
+            imageProxy.close()
+            return
+        }
+        if (scanType == ScanType.SCAN_FULL_SCREEN) {
+            val codeBeans = nativeLib?.scanCode(
+                Utils.yuv420888ToNv21(imageProxy), imageProxy.width, imageProxy.height
+            )
+            if (!codeBeans.isNullOrEmpty()) {
+                isPause = true
+                (context as FragmentActivity).runOnUiThread {
+                    if (lifecycle is LifecycleRegistry) {
+                        lifecycle.currentState = Lifecycle.State.CREATED
                     }
-                } else if (scanType == ScanType.SCAN_BOX) {
-                    val codeBeans = nativeLib?.scanCodeCut(
-                        data.data, data.width, data.height,
-                        boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
-                    )
-                    if (!codeBeans.isNullOrEmpty()) {
-                        isPause = onScanListener?.onResult(codeBeans) == true
-
-                    }
+                    codePointView?.setQrCodes(codeBeans)
                 }
+                onScanListener?.onResult(codeBeans)
+            }
+
+        } else if (scanType == ScanType.SCAN_BOX) {
+
+            val codeBeans = nativeLib?.scanCodeCut(
+                Utils.yuv420888ToNv21(imageProxy), imageProxy.width, imageProxy.height,
+                boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
+            )
+            if (!codeBeans.isNullOrEmpty()) {
+                isPause = onScanListener?.onResult(codeBeans) == true
+
+            }
+        }
+        imageProxy.close()
+    }
+
+    @Synchronized
+    private fun setCameraData(data: CameraDataBean) {
+        if (isPause) {
+            return
+        }
+        if (scanType == ScanType.SCAN_FULL_SCREEN) {
+            val codeBeans = nativeLib?.scanCode(
+                data.data, data.width, data.height
+            )
+            if (!codeBeans.isNullOrEmpty()) {
+                isPause = true
+                cameraView?.stop()
+                (context as FragmentActivity).runOnUiThread {
+                    codePointView?.setQrCodes(codeBeans)
+                }
+
+                onScanListener?.onResult(codeBeans)
+            }
+        } else if (scanType == ScanType.SCAN_BOX) {
+            val codeBeans = nativeLib?.scanCodeCut(
+                data.data, data.width, data.height,
+                boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
+            )
+            if (!codeBeans.isNullOrEmpty()) {
+                isPause = onScanListener?.onResult(codeBeans) == true
+
             }
         }
     }
