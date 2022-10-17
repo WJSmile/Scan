@@ -73,9 +73,14 @@ class ScanView @JvmOverloads constructor(
         setCallBack()
         codePointView?.setCancelButtonListener {
             isPause = false
-            if (lifecycle is LifecycleRegistry) {
-                lifecycle.currentState = Lifecycle.State.RESUMED
+           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (lifecycle is LifecycleRegistry) {
+                    lifecycle.currentState = Lifecycle.State.RESUMED
+                }
+            }else{
+                cameraView?.start()
             }
+
             onScanListener?.onCancel()
         }
 

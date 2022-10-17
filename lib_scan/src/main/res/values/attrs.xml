@@ -2,12 +2,12 @@
 <resources>
     <declare-styleable name="ScanView">
         <attr name="scanMode" >
-            <enum name="SIMPLE"/>
-            <enum name="MANY"/>
+            <enum name="simple" value="0"/>
+            <enum name="many" value="1"/>
         </attr>
         <attr name="scanType">
-            <enum name="SCAN_FULL_SCREEN"/>
-            <enum name="SCAN_BOX"/>
+            <enum name="scan_full_screen" value="0"/>
+            <enum name="scan_box" value="1"/>
         </attr>
         <attr name="cancelText" format="string"/>
         <attr name="cancelTextColor" format="color"/>
@@ -30,9 +30,9 @@
         <attr name="hornWidth" format="dimension"/>
         <attr name="hornLength" format="dimension"/>
         <attr name="hornColor" format="color"/>
-        <attr name="boxType" >
-            <enum name="ROUND" value="0"/>
-            <enum name="HORN" value="1"/>
+        <attr name="scanBoxHornType" >
+            <enum name="round" value="0"/>
+            <enum name="horn" value="1"/>
         </attr>
         <attr name="animatorWidth" format="dimension"/>
         <attr name="animatorHeight" format="dimension"/>

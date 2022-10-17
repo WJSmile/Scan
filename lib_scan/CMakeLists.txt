@@ -50,6 +50,9 @@ set(JNI_LIBS_DIR ${CMAKE_SOURCE_DIR}/libs)
 add_subdirectory(src/main/cpp/zxing)
 include_directories(src/main/cpp/zxing)
 
+include_directories(src/main/cpp/libyuv/include)
+add_subdirectory(src/main/cpp/libyuv)
+
 add_library(libiconv
         STATIC
         IMPORTED)
@@ -135,4 +138,5 @@ target_link_libraries(
         liblibopenjp2
         libzlib
         jnigraphics
+        yuv
         ${log-lib})

@@ -1,15 +1,17 @@
 package com.palmpay.scan.utils
 
 import android.content.Context
-import android.graphics.Bitmap
+import android.graphics.*
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.camera.core.ImageProxy
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.ReadOnlyBufferException
 import kotlin.experimental.inv
+
 
 object Utils {
 
@@ -166,4 +168,28 @@ object Utils {
         }
         return pathList
     }
+
+    fun byteArrayToBitMap(data: ByteArray?, width: Int, height: Int): Bitmap {
+        val newOpts = BitmapFactory.Options()
+        newOpts.inJustDecodeBounds = true
+        val yuvImage = YuvImage(
+            data,
+            ImageFormat.NV21,
+            width,
+            height,
+            null
+        )
+        val bao = ByteArrayOutputStream()
+        yuvImage.compressToJpeg(
+            Rect(0, 0, width, height),
+            100,
+            bao
+        )
+        val rawImage: ByteArray = bao.toByteArray()
+        val options = BitmapFactory.Options()
+        options.inPreferredConfig = Bitmap.Config.RGB_565
+        return   BitmapFactory.decodeByteArray(rawImage, 0, rawImage.size, options)
+    }
+
+
 }
