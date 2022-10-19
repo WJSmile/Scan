@@ -83,7 +83,8 @@ Java_com_palmpay_scan_code_NativeLib_release(JNIEnv *env, jobject thiz) {
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_palmpay_scan_code_NativeLib_scanCode(JNIEnv *env, jobject thiz, jbyteArray bytes,
-                                              jint width, jint height) {
+                                              jint width, jint height, jint view_width,
+                                              jint view_height) {
     Distinguish *distinguish = GetDistinguishFromObj(env, thiz);
     jobject obj = nullptr;
     jbyte *bytes_ = env->GetByteArrayElements(bytes, nullptr);
@@ -94,7 +95,9 @@ Java_com_palmpay_scan_code_NativeLib_scanCode(JNIEnv *env, jobject thiz, jbyteAr
                 (uchar *) bytes_);
 
         cvtColor(src, src, COLOR_YUV2GRAY_420);
+        resize(src,src,Size(width/2,height/2));
         rotate(src, src, ROTATE_90_CLOCKWISE);
+
         obj = distinguish->decode(env, src);
         src.release();
     }
@@ -109,12 +112,12 @@ Java_com_palmpay_scan_code_NativeLib_scanCodeFormBitMap(JNIEnv *env, jobject thi
     jobject obj = nullptr;
     if (distinguish != nullptr) {
         Mat src;
-        Utils::BitmapToMat(env,bitmap,src);
+        Utils::BitmapToMat(env, bitmap, src);
         cvtColor(src, src, COLOR_RGBA2GRAY);
         obj = distinguish->decode(env, src);
         src.release();
     }
-    return  obj;
+    return obj;
 }
 
 

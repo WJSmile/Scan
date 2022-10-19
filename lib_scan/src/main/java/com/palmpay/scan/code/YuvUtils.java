@@ -8,7 +8,7 @@ public class YuvUtils {
     public native void rotation(byte[] srcYuvData,
                                 byte[] dstYuvData,
                                 int width,
-                                int height,int type);
+                                int height, int type);
 
     public native void clipping(byte[] srcYuvData,
                                 byte[] dstYuvData,
@@ -22,8 +22,19 @@ public class YuvUtils {
     public native void scale(byte[] srcYuvData,
                              byte[] dstYuvData,
                              int width,
-                             int height,int dstWidth,
+                             int height, int dstWidth,
                              int dstHeight);
+
+    public native void scaleAndclipping(byte[] srcYuvData,
+                                        byte[] dstYuvData,
+                                        int width,
+                                        int height,
+                                        int cropX,
+                                        int cropY,
+                                        int cropWidth,
+                                        int cropHeight,
+                                        int dstWidth,
+                                        int dstHeight);
 
 
     public native void yuvI420ToNV21(byte[] srcYuvData,

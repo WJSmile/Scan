@@ -139,22 +139,17 @@ class CameraView @JvmOverloads constructor(
         val byteW = this.camera?.parameters?.pictureSize?.width ?: 0
         val byteH = this.camera?.parameters?.pictureSize?.height ?: 0
 
-        val scaleYuvByte = ByteArray(w * h * 3 / 2)
-
-
         val clippingYuvByte = ByteArray(width * height * 3 / 2)
-
-        yuvUtils.scale(data, scaleYuvByte, byteW, byteH, h, w)
-
-
-        yuvUtils.clipping(
-            scaleYuvByte,
+        yuvUtils.scaleAndclipping(
+            data,
             clippingYuvByte,
-            h, w,
-            abs(values[Matrix.MTRANS_X]).toInt(),
+            byteW,
+            byteH,
             abs(values[Matrix.MTRANS_Y]).toInt(),
+            abs(values[Matrix.MTRANS_X]).toInt(),
             height,
-            width
+            width,
+            h, w
         )
         return clippingYuvByte
     }

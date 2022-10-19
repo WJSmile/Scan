@@ -15,6 +15,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class CameraXView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -40,7 +41,6 @@ class CameraXView @JvmOverloads constructor(
     private var analyzerListener: ((ImageProxy) -> Unit)? = null
 
     init {
-
         previewView = PreviewView(context)
         addView(previewView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
 
@@ -64,15 +64,23 @@ class CameraXView @JvmOverloads constructor(
             val cameraProvider = cameraProviderFuture.get()
 
             preview.setSurfaceProvider(previewView.surfaceProvider)
+            val useCaseGroup = previewView.viewPort?.let {viewPort->
+                imageAnalysis?.let {
+                    UseCaseGroup.Builder()
+                        .addUseCase(preview)
+                        .addUseCase(it)
+                        .setViewPort(viewPort)
+                        .build()
+                }
+            }
 
-
-            camera = cameraProvider.bindToLifecycle(
-                (context as FragmentActivity),
-                cameraSelector,
-                imageAnalysis,
-                preview
-            )
-
+            camera = useCaseGroup?.let {
+                cameraProvider.bindToLifecycle(
+                    (context as FragmentActivity),
+                    cameraSelector,
+                    it
+                )
+            }
         }, ContextCompat.getMainExecutor(context))
     }
 
@@ -82,7 +90,7 @@ class CameraXView @JvmOverloads constructor(
     }
 
     fun unbindAll() {
-       cameraProviderFuture.get().unbindAll()
+        cameraProviderFuture.get().unbindAll()
     }
 
 }

@@ -34,19 +34,22 @@ jobject JavaCallHelper::codeBeanToJava(JNIEnv *env, std::vector<CodeBean> &qrCod
     for (auto &qrCode: qrCodes) {
 
 
-        jobject new_rect = env->NewObject(java_rect_class, rectMid, qrCode.rect.x, qrCode.rect.y,
-                                          qrCode.rect.x + qrCode.rect.width,
-                                          qrCode.rect.y + qrCode.rect.height);
+        jobject new_rect = env->NewObject(java_rect_class, rectMid, qrCode.rect.x * 2,
+                                          qrCode.rect.y * 2,
+                                          (qrCode.rect.x + qrCode.rect.width) * 2,
+                                          (qrCode.rect.y + qrCode.rect.height) * 2);
         jobject topLeft = env->NewObject(java_PointF_class, pointFInitMid, qrCode.topLeft.x,
-                                         qrCode.topLeft.y);
-        jobject bottomLeft = env->NewObject(java_PointF_class, pointFInitMid, qrCode.bottomLeft.x,
-                                            qrCode.bottomLeft.y);
-        jobject bottomRight = env->NewObject(java_PointF_class, pointFInitMid, qrCode.bottomRight.x,
-                                             qrCode.bottomRight.y);
-        jobject topRight = env->NewObject(java_PointF_class, pointFInitMid, qrCode.topRight.x,
-                                          qrCode.topRight.y);
-        jobject center = env->NewObject(java_PointF_class, pointFInitMid, qrCode.center.x,
-                                        qrCode.center.y);
+                                         qrCode.topLeft.y * 2);
+        jobject bottomLeft = env->NewObject(java_PointF_class, pointFInitMid,
+                                            qrCode.bottomLeft.x * 2,
+                                            qrCode.bottomLeft.y * 2);
+        jobject bottomRight = env->NewObject(java_PointF_class, pointFInitMid,
+                                             qrCode.bottomRight.x * 2,
+                                             qrCode.bottomRight.y * 2);
+        jobject topRight = env->NewObject(java_PointF_class, pointFInitMid, qrCode.topRight.x * 2,
+                                          qrCode.topRight.y * 2);
+        jobject center = env->NewObject(java_PointF_class, pointFInitMid, qrCode.center.x * 2,
+                                        qrCode.center.y * 2);
 
         jbyteArray jarray = env->NewByteArray(qrCode.code.length());
         env->SetByteArrayRegion(jarray, 0, qrCode.code.length(), (jbyte *) qrCode.code.c_str());

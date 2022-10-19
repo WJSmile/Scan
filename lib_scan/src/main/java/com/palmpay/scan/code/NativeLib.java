@@ -24,7 +24,7 @@ public class NativeLib {
 
     public native ArrayList<CodeBean> scanCodeFormBitMap(Bitmap bitmap);
 
-    public native ArrayList<CodeBean> scanCodeCut(byte[] bytes, int width, int height, int boxWidth, int boxTop);
+    public native ArrayList<CodeBean> scanCodeCut(byte[] bytes, int width, int height,  int boxWidth, int boxTop);
 
     public native CodeData getCodeBitMap(String contents,
                                          int width,
