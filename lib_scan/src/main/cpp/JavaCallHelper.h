@@ -22,7 +22,7 @@ struct CodeBean {
 
 class JavaCallHelper {
 public:
-    virtual jobject codeBeanToJava(JNIEnv *env,std::vector<CodeBean> &qrCodeBean);
+    virtual jobject codeBeanToJava(JNIEnv *env,std::vector<CodeBean> &qrCodeBean,float scale,int top,int left);
 
 };
 

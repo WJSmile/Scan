@@ -30,12 +30,12 @@ class MainActivity : AppCompatActivity() {
         scanView = findViewById(R.id.scan_view)
 
         scanView.setScanMode(ScanMode.MANY)
-        scanView.setScanType(ScanType.SCAN_FULL_SCREEN)
+        scanView.setScanType(ScanType.SCAN_BOX)
         scanView.setOnScanListener(object : OnScanListener {
 
             override fun onResult(result: List<CodeBean>): Boolean {
                 Log.e(">>>>>>", (result[0].codeString))
-               // finish()
+                finish()
                 return true
             }
         })

@@ -83,8 +83,7 @@ Java_com_palmpay_scan_code_NativeLib_release(JNIEnv *env, jobject thiz) {
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_palmpay_scan_code_NativeLib_scanCode(JNIEnv *env, jobject thiz, jbyteArray bytes,
-                                              jint width, jint height, jint view_width,
-                                              jint view_height) {
+                                              jint width, jint height) {
     Distinguish *distinguish = GetDistinguishFromObj(env, thiz);
     jobject obj = nullptr;
     jbyte *bytes_ = env->GetByteArrayElements(bytes, nullptr);
@@ -95,10 +94,10 @@ Java_com_palmpay_scan_code_NativeLib_scanCode(JNIEnv *env, jobject thiz, jbyteAr
                 (uchar *) bytes_);
 
         cvtColor(src, src, COLOR_YUV2GRAY_420);
-        resize(src,src,Size(width/2,height/2));
+        resize(src, src, Size(width / 2, height / 2));
         rotate(src, src, ROTATE_90_CLOCKWISE);
 
-        obj = distinguish->decode(env, src);
+        obj = distinguish->decode(env, src, 2, 0, 0);
         src.release();
     }
     env->ReleaseByteArrayElements(bytes, bytes_, 0);
@@ -114,7 +113,7 @@ Java_com_palmpay_scan_code_NativeLib_scanCodeFormBitMap(JNIEnv *env, jobject thi
         Mat src;
         Utils::BitmapToMat(env, bitmap, src);
         cvtColor(src, src, COLOR_RGBA2GRAY);
-        obj = distinguish->decode(env, src);
+        obj = distinguish->decode(env, src, 2, 0, 0);
         src.release();
     }
     return obj;
@@ -141,10 +140,10 @@ Java_com_palmpay_scan_code_NativeLib_scanCodeCut(JNIEnv *env, jobject thiz, jbyt
             Rect rect = Rect(Point((src.cols - box_width) / 2,
                                    box_top),
                              Point((src.cols - box_width) / 2 +
-                                           box_width, box_top + box_width));
+                                   box_width, box_top + box_width));
             src = src(rect);
         }
-        obj = distinguish->decode(env, src);
+        obj = distinguish->decode(env, src, 1, box_top, (width - box_width) / 2);
         src.release();
     }
     env->ReleaseByteArrayElements(bytes, bytes_, 0);

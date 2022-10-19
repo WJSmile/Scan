@@ -113,8 +113,7 @@ class ScanView @JvmOverloads constructor(
         }
         if (scanType == ScanType.SCAN_FULL_SCREEN) {
             val codeBeans = nativeLib?.scanCode(
-                Utils.yuv420888ToNv21(imageProxy), imageProxy.width, imageProxy.height,
-                cameraXView?.width?:0,cameraXView?.height?:0
+                Utils.yuv420888ToNv21(imageProxy), imageProxy.width, imageProxy.height
             )
             if (!codeBeans.isNullOrEmpty()) {
                 isPause = true
@@ -131,7 +130,6 @@ class ScanView @JvmOverloads constructor(
 
             val codeBeans = nativeLib?.scanCodeCut(
                 Utils.yuv420888ToNv21(imageProxy), imageProxy.width, imageProxy.height,
-                cameraXView?.width?:0,cameraXView?.height?:0,
                 boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
             )
             if (!codeBeans.isNullOrEmpty()) {
@@ -149,8 +147,7 @@ class ScanView @JvmOverloads constructor(
         }
         if (scanType == ScanType.SCAN_FULL_SCREEN) {
             val codeBeans = nativeLib?.scanCode(
-                data.data, data.width, data.height,
-                        cameraView?.width?:0,cameraView?.height?:0)
+                data.data, data.width, data.height)
             if (!codeBeans.isNullOrEmpty()) {
                 isPause = true
                 cameraView?.stop()
@@ -163,7 +160,7 @@ class ScanView @JvmOverloads constructor(
         } else if (scanType == ScanType.SCAN_BOX) {
             val codeBeans = nativeLib?.scanCodeCut(
                 data.data, data.width, data.height,
-                cameraView?.width?:0,cameraView?.height?:0,
+
                 boxView.boxSize.toInt(), boxView.boxRect.top.toInt()
             )
             if (!codeBeans.isNullOrEmpty()) {

@@ -154,7 +154,7 @@ Distinguish::Distinguish(const string &detect_prototxt, const string &detect_caf
 
 
 void Distinguish::zxingScan(Mat &qrcode, vector<CodeBean> &codeBeans) {
-    if(hints== nullptr){
+    if (hints == nullptr) {
         return;
     }
     cvtColor(qrcode, qrcode, COLOR_BGR2BGRA);
@@ -201,7 +201,7 @@ void Distinguish::zxingScan(Mat &qrcode, vector<CodeBean> &codeBeans) {
 }
 
 jobject
-Distinguish::decode(JNIEnv *env, Mat &src) {
+Distinguish::decode(JNIEnv *env, Mat &src, float scale, int top, int left) {
 
     mux.lock();
     if (qrCodes == nullptr) {
@@ -223,7 +223,7 @@ Distinguish::decode(JNIEnv *env, Mat &src) {
     if (javaCallHelper != nullptr) {
         if (!qrCodes->empty()) {
             mux.unlock();
-            return javaCallHelper->codeBeanToJava(env, *qrCodes);
+            return javaCallHelper->codeBeanToJava(env, *qrCodes, scale, top, left);
         }
     }
     mux.unlock();

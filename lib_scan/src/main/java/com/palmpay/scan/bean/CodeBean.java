@@ -2,10 +2,11 @@ package com.palmpay.scan.bean;
 
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.Log;
 
 public class CodeBean {
-    private Rect rect;
+    private RectF rect;
     private byte[] code;
     private ScanCodeType scanCodeType;
     public PointF topLeft;
@@ -14,7 +15,7 @@ public class CodeBean {
     public PointF topRight;
     public PointF center;
 
-    public CodeBean(Rect rect, byte[] code, String type, PointF topLeft, PointF bottomLeft, PointF bottomRight, PointF topRight, PointF center) {
+    public CodeBean(RectF rect, byte[] code, String type, PointF topLeft, PointF bottomLeft, PointF bottomRight, PointF topRight, PointF center) {
         this.rect = rect;
         this.code = code;
         this.scanCodeType = ScanCodeType.valueOf(type);
@@ -65,11 +66,11 @@ public class CodeBean {
         this.topRight = topRight;
     }
 
-    public Rect getRect() {
+    public RectF getRect() {
         return rect;
     }
 
-    public void setRect(Rect rect) {
+    public void setRect(RectF rect) {
         this.rect = rect;
     }
 
