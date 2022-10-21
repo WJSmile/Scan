@@ -19,7 +19,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
 class MainActivity : AppCompatActivity() {
     private lateinit var scanView: ScanView
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,19 +29,17 @@ class MainActivity : AppCompatActivity() {
         scanView = findViewById(R.id.scan_view)
 
         scanView.setScanMode(ScanMode.MANY)
-        scanView.setScanType(ScanType.SCAN_BOX)
+        scanView.setScanType(ScanType.SCAN_FULL_SCREEN)
         scanView.setOnScanListener(object : OnScanListener {
-
             override fun onResult(result: List<CodeBean>): Boolean {
-                Log.e(">>>>>>", (result[0].codeString))
-                finish()
                 return true
             }
         })
     }
 
-    override fun onStop() {
-        super.onStop()
+
+    override fun onDestroy() {
+        super.onDestroy()
         scanView.release()
     }
 

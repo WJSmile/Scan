@@ -113,7 +113,7 @@ Java_com_palmpay_scan_code_NativeLib_scanCodeFormBitMap(JNIEnv *env, jobject thi
         Mat src;
         Utils::BitmapToMat(env, bitmap, src);
         cvtColor(src, src, COLOR_RGBA2GRAY);
-        obj = distinguish->decode(env, src, 2, 0, 0);
+        obj = distinguish->decode(env, src, 1, 0, 0);
         src.release();
     }
     return obj;
@@ -133,7 +133,13 @@ Java_com_palmpay_scan_code_NativeLib_scanCodeCut(JNIEnv *env, jobject thiz, jbyt
                 width, CV_8UC1,
                 (uchar *) bytes_);
 
+        width = width / 2;
+        height = height / 2;
+        box_width = box_width / 2;
+        box_top = box_top / 2;
+
         cvtColor(src, src, COLOR_YUV2GRAY_420);
+        resize(src, src, Size(width , height));
         rotate(src, src, ROTATE_90_CLOCKWISE);
 
         if (box_width != 0 && box_top != 0) {

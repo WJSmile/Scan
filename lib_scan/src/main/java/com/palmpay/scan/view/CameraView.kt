@@ -10,6 +10,7 @@ import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
 import android.view.Surface
+import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -20,7 +21,7 @@ import kotlin.math.abs
 
 class CameraView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
-) : FrameLayout(context, attrs), Camera.PreviewCallback {
+) : FrameLayout(context, attrs), Camera.PreviewCallback, SurfaceHolder.Callback {
 
     private val surfaceView = SurfaceView(context)
 
@@ -71,6 +72,7 @@ class CameraView @JvmOverloads constructor(
             surfaceView.scaleY = values[Matrix.MSCALE_Y]
             surfaceView.invalidate()
         }
+        surfaceView.holder.addCallback(this)
         camera?.startPreview()
     }
 
@@ -106,6 +108,7 @@ class CameraView @JvmOverloads constructor(
 
     fun start() {
         camera?.startPreview()
+        camera?.setPreviewDisplay(surfaceView.holder)
         camera?.setPreviewCallback(this)
     }
 
@@ -210,5 +213,18 @@ class CameraView @JvmOverloads constructor(
         matrix.postScale(scaleX, scaleY)
         matrix.postTranslate(dx, dy)
         return matrix
+    }
+
+    override fun surfaceCreated(holder: SurfaceHolder) {
+        camera?.startPreview()
+        camera?.setPreviewDisplay(holder)
+        camera?.setPreviewCallback(this)
+    }
+
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+    }
+
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
+        stop()
     }
 }
