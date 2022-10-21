@@ -74,11 +74,11 @@ class ScanView @JvmOverloads constructor(
         setCallBack()
         codePointView?.setCancelButtonListener {
             isPause = false
-           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 if (lifecycle is LifecycleRegistry) {
                     lifecycle.currentState = Lifecycle.State.RESUMED
                 }
-            }else{
+            } else {
                 cameraView?.start()
             }
 
@@ -90,6 +90,7 @@ class ScanView @JvmOverloads constructor(
         }
 
         refreshStatus()
+        setParameters()
     }
 
     private fun setCallBack() {
@@ -147,7 +148,8 @@ class ScanView @JvmOverloads constructor(
         }
         if (scanType == ScanType.SCAN_FULL_SCREEN) {
             val codeBeans = nativeLib?.scanCode(
-                data.data, data.width, data.height)
+                data.data, data.width, data.height
+            )
             if (!codeBeans.isNullOrEmpty()) {
                 isPause = true
                 cameraView?.stop()
@@ -209,6 +211,12 @@ class ScanView @JvmOverloads constructor(
         } else {
             codePointView?.visibility = View.GONE
             boxView.visibility = View.VISIBLE
+        }
+    }
+
+    private fun setParameters(attrs: AttributeSet? = null) {
+        attrs?.let {
+
         }
     }
 

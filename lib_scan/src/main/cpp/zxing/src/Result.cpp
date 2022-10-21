@@ -23,6 +23,7 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 	  _position(Line(y, xStart, xStop)),
 	  _format(format),
 	  _lineCount(0),
+	  _versionNumber(0),
 	  _readerInit(readerInit)
 {}
 
@@ -34,6 +35,7 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	  _sai(decodeResult.structuredAppend()),
 	  _format(format),
 	  _lineCount(decodeResult.lineCount()),
+	  _versionNumber(decodeResult.versionNumber()),
 	  _isMirrored(decodeResult.isMirrored()),
 	  _readerInit(decodeResult.readerInit())
 {
@@ -116,23 +118,31 @@ Result& Result::setDecodeHints(DecodeHints hints)
 
 bool Result::operator==(const Result& o) const
 {
-	// two symbols may be considered the same if at least one of them has an error
+	// two symbols may not be considered the same if at least one of them has an error
 	if (!(format() == o.format() && (bytes() == o.bytes() || error() || o.error())))
 		return false;
 
 	if (BarcodeFormats(BarcodeFormat::MatrixCodes).testFlag(format()))
 		return IsInside(Center(o.position()), position());
 
-	// linear symbology comparisons only implemented for this->lineCount == 1
-	//assert(lineCount() == 1);
+	if (orientation() != o.orientation())
+		return false;
+
+	if (lineCount() > 1 && o.lineCount() > 1)
+		return IsInside(Center(o.position()), position());
+
+	// the following code is only meant for this->lineCount == 1
+	assert(lineCount() == 1);
 
 	// if one line is less than half the length of the other away from the
-	// latter, we consider it to belong to the same symbol
+	// latter, we consider it to belong to the same symbol. additionally, both need to have
+	// roughly the same length (see #367)
 	auto dTop = maxAbsComponent(o.position().topLeft() - position().topLeft());
 	auto dBot = maxAbsComponent(o.position().bottomLeft() - position().topLeft());
 	auto length = maxAbsComponent(position().topLeft() - position().bottomRight());
+	auto dLength = std::abs(length - maxAbsComponent(o.position().topLeft() - o.position().bottomRight()));
 
-	return std::min(dTop, dBot) < length / 2;
+	return std::min(dTop, dBot) < length / 2 && dLength < length / 5;
 }
 
 Result MergeStructuredAppendSequence(const Results& results)
