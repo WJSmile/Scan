@@ -35,7 +35,7 @@ public:
 
     virtual void getBarCode(Mat &src, vector<CodeBean> &codeBeans);
 
-    virtual ZXing::ImageView ImageViewFromMat(const cv::Mat &image);
+    virtual ZXing::ImageView* ImageViewFromMat(const cv::Mat &image);
 
     virtual string getCodeTypeString(zbar_symbol_type_e zbarType,ZXing::BarcodeFormat barcodeFormat);
 

@@ -63,7 +63,7 @@ class ScanView @JvmOverloads constructor(
 
         boxView = BoxView(context)
         addView(boxView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
-        setParameters(attrs)
+
 
         val paths = Utils.copyWeChatModel(context)
         if (paths.isNotEmpty()) {
@@ -75,7 +75,7 @@ class ScanView @JvmOverloads constructor(
             )
         }
 
-
+        setParameters(attrs)
         setCallBack()
         codePointView?.setCancelButtonListener {
             isPause = false

@@ -59,6 +59,7 @@ void Distinguish::getBarCode(Mat &src, vector<CodeBean> &codeBeans) {
             trans[3] = Point2f(400, 0);
             Mat m = getPerspectiveTransform(points, trans);
 
+            //透视变换
             warpPerspective(src, result, m, cv::Size(400, 200), INTER_LINEAR);
 
             CodeBean codeBean = zbarScan(result);
@@ -157,10 +158,10 @@ void Distinguish::zxingScan(Mat &qrcode, vector<CodeBean> &codeBeans) {
     if (hints == nullptr) {
         return;
     }
-    cvtColor(qrcode, qrcode, COLOR_BGR2BGRA);
+    cvtColor(qrcode, qrcode, COLOR_GRAY2BGR);
 
-    auto *image = new ZXing::ImageView(qrcode.data, qrcode.cols, qrcode.rows,
-                                       ZXing::ImageFormat::BGRX);
+
+    auto *image = ImageViewFromMat(qrcode);
     auto results = ReadBarcodes(*image, *hints);
     for (auto &result: results) {
         if (result.isValid()) {
@@ -230,7 +231,7 @@ Distinguish::decode(JNIEnv *env, Mat &src, float scale, int top, int left) {
     return nullptr;
 }
 
-ZXing::ImageView Distinguish::ImageViewFromMat(const Mat &image) {
+ZXing::ImageView *Distinguish::ImageViewFromMat(const Mat &image) {
     using ZXing::ImageFormat;
 
     auto fmt = ImageFormat::None;
@@ -246,9 +247,9 @@ ZXing::ImageView Distinguish::ImageViewFromMat(const Mat &image) {
             break;
     }
     if (image.depth() != CV_8U || fmt == ImageFormat::None)
-        return {nullptr, 0, 0, ImageFormat::None};
+        return new ZXing::ImageView(nullptr, 0, 0, ImageFormat::None);
 
-    return {image.data, image.cols, image.rows, fmt};
+    return new ZXing::ImageView(image.data, image.cols, image.rows, fmt);
 }
 
 string
