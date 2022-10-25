@@ -12,16 +12,21 @@ import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.camera.core.ImageProxy
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.getResourceIdOrThrow
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.view.get
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
+import com.palmpay.scan.R
 import com.palmpay.scan.bean.CameraDataBean
 import com.palmpay.scan.bean.ScanMode
 import com.palmpay.scan.bean.ScanType
 import com.palmpay.scan.callback.OnScanListener
 import com.palmpay.scan.code.NativeLib
 import com.palmpay.scan.utils.Utils
+import com.palmpay.scan.utils.toPx
 
 class ScanView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -58,7 +63,7 @@ class ScanView @JvmOverloads constructor(
 
         boxView = BoxView(context)
         addView(boxView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
-
+        setParameters(attrs)
 
         val paths = Utils.copyWeChatModel(context)
         if (paths.isNotEmpty()) {
@@ -89,8 +94,6 @@ class ScanView @JvmOverloads constructor(
             onScanListener?.onPointClick(it)
         }
 
-        refreshStatus()
-        setParameters()
     }
 
     private fun setCallBack() {
@@ -214,10 +217,151 @@ class ScanView @JvmOverloads constructor(
         }
     }
 
+    private var scanMode = ScanMode.SIMPLE
+
+
     private fun setParameters(attrs: AttributeSet? = null) {
         attrs?.let {
+            val typedArray = context.obtainStyledAttributes(it, R.styleable.ScanView)
+            scanMode = when (typedArray.getInt(R.styleable.ScanView_scanMode, 0)) {
+                0 -> ScanMode.SIMPLE
+                1 -> ScanMode.MANY
+                else -> ScanMode.SIMPLE
+            }
+            setScanMode(scanMode)
 
+            scanType = when (typedArray.getInt(R.styleable.ScanView_scanType, 0)) {
+                0 -> ScanType.SCAN_FULL_SCREEN
+                1 -> ScanType.SCAN_BOX
+                else -> ScanType.SCAN_FULL_SCREEN
+            }
+            refreshStatus()
+
+            typedArray.getString(R.styleable.ScanView_cancelText)?.let { cancelText ->
+                setCancelText(cancelText)
+            }
+
+
+            setCancelColor(
+                typedArray.getColor(
+                    R.styleable.ScanView_cancelTextColor,
+                    ContextCompat.getColor(context, R.color.width)
+                )
+            )
+
+            setCancelTextSize(
+                typedArray.getDimension(
+                    R.styleable.ScanView_cancelTextSize,
+                    18.toPx(context)
+                )
+            )
+
+            setCancelTop(
+                typedArray.getDimensionPixelOffset(
+                    R.styleable.ScanView_cancelTop,
+                    60.toPx(context).toInt()
+                )
+            )
+
+            setCancelLeft(
+                typedArray.getDimensionPixelOffset(
+                    R.styleable.ScanView_cancelLeft,
+                    20.toPx(context).toInt()
+                )
+            )
+
+            setPointViewRes(
+                typedArray.getResourceId(
+                    R.styleable.ScanView_pointViewRes,
+                    R.drawable.scan_code_point
+                )
+            )
+
+            setPointViewSize(
+                typedArray.getDimensionPixelOffset(
+                    R.styleable.ScanView_pointSize,
+                    50.toPx(context).toInt()
+                )
+            )
+
+            setSuccessColorRes(
+                typedArray.getResourceId(
+                    R.styleable.ScanView_successRes,
+                    R.color.half_transparent
+                )
+            )
+
+            setBoxSize(typedArray.getDimension(R.styleable.ScanView_boxSize, 300.toPx(context)))
+            setBoxRound(typedArray.getDimension(R.styleable.ScanView_boxRound, 10.toPx(context)))
+
+            setMantleColor(
+                typedArray.getColor(
+                    R.styleable.ScanView_mantleColor,
+                    ContextCompat.getColor(context, R.color.half_transparent)
+                )
+            )
+
+            setBoxStrokeColor(
+                typedArray.getColor(
+                    R.styleable.ScanView_boxStrokeColor,
+                    ContextCompat.getColor(context, R.color.width)
+                )
+            )
+
+            setBoxStrokeWidth(
+                typedArray.getDimension(
+                    R.styleable.ScanView_boxStrokeWidth,
+                    2.toPx(context)
+                )
+            )
+            setLineWidth(
+                typedArray.getDimension(
+                    R.styleable.ScanView_lineWidth,
+                    if (scanType == ScanType.SCAN_BOX) 300.toPx(context) else 360.toPx(context)
+                )
+            )
+            setLineHeight(typedArray.getDimension(R.styleable.ScanView_lineHeight, 2.toPx(context)))
+            setLineTop(typedArray.getDimension(R.styleable.ScanView_lineTop, 0F))
+            setLineAnimatorDuration(
+                typedArray.getInt(R.styleable.ScanView_lineAnimatorDuration, 2500).toLong()
+            )
+            setHornWidth(typedArray.getDimension(R.styleable.ScanView_hornWidth, 6.toPx(context)))
+            setHornLength(
+                typedArray.getDimension(
+                    R.styleable.ScanView_hornLength,
+                    20.toPx(context)
+                )
+            )
+            setHornColor(
+                typedArray.getColor(
+                    R.styleable.ScanView_hornColor,
+                    ContextCompat.getColor(context, R.color.width)
+                )
+            )
+            setBoxType(typedArray.getInt(R.styleable.ScanView_scanBoxHornType, 0))
+            setAnimatorWidth(
+                typedArray.getDimension(
+                    R.styleable.ScanView_animatorWidth,
+                    200.toPx(context)
+                )
+            )
+            setAnimatorHeight(
+                typedArray.getDimension(
+                    R.styleable.ScanView_animatorHeight,
+                    300.toPx(context)
+                )
+            )
+            setAnimatorTime(typedArray.getInt(R.styleable.ScanView_animatorTime, 2000).toLong())
+            setLineBitmapRes(typedArray.getResourceId(R.styleable.ScanView_lineBitmap, 0))
+            setTrailingBitmap(
+                typedArray.getResourceId(
+                    R.styleable.ScanView_trailingBitmap,
+                    R.drawable.scankit_scan_tail
+                )
+            )
+            typedArray.recycle()
         }
+
     }
 
     /**
@@ -247,7 +391,7 @@ class ScanView @JvmOverloads constructor(
      *
      */
     fun setCancelText(cancelText: String) {
-        codePointView?.cancelText = cancelText
+        codePointView?.setCancelText(cancelText)
     }
 
     /**
@@ -255,9 +399,14 @@ class ScanView @JvmOverloads constructor(
      * @param color  扫码成功后取消按钮文字颜色
      *
      */
-    fun setCancelColor(@ColorRes color: Int) {
-        codePointView?.cancelColor = color
+    fun setCancelColorRes(@ColorRes color: Int) {
+        codePointView?.setCancelTextColor(ContextCompat.getColor(context, color))
     }
+
+    fun setCancelColor(color: Int) {
+        codePointView?.setCancelTextColor(color)
+    }
+
 
     /**
      *
@@ -265,7 +414,7 @@ class ScanView @JvmOverloads constructor(
      *
      */
     fun setCancelTextSize(cancelTextSize: Float) {
-        codePointView?.cancelTextSize = cancelTextSize
+        codePointView?.setCancelTextSize(cancelTextSize)
     }
 
 
@@ -360,6 +509,7 @@ class ScanView @JvmOverloads constructor(
     fun setLineWidth(lineWidth: Float) {
         boxView.lineWidth = lineWidth
         codePointView?.scanLineView?.lineWidth = lineWidth
+
     }
 
     /**
@@ -446,9 +596,13 @@ class ScanView @JvmOverloads constructor(
      * @param id 扫描线资源id
      */
     @SuppressLint("UseCompatLoadingForDrawables")
-    fun setLineBitmap(@DrawableRes id: Int) {
+    fun setLineBitmapRes(@DrawableRes id: Int) {
+        if (id == 0) {
+            return
+        }
         setLineBitmap(context.resources.getDrawable(id).toBitmap())
     }
+
 
     /**
      * @param bitmap 扫描线bitmap

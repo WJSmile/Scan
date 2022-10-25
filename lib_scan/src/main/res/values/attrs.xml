@@ -16,16 +16,15 @@
         <attr name="cancelLeft" format="dimension"/>
         <attr name="pointViewRes" format="reference"/>
         <attr name="pointSize" format="dimension"/>
-        <attr name="successColorRes" format="reference"/>
-        <attr name="size" format="dimension"/>
-        <attr name="round" format="dimension"/>
+        <attr name="successRes" format="reference"/>
+        <attr name="boxSize" format="dimension"/>
+        <attr name="boxRound" format="dimension"/>
         <attr name="mantleColor" format="color"/>
         <attr name="boxStrokeColor" format="color"/>
         <attr name="boxStrokeWidth" format="dimension"/>
         <attr name="lineWidth" format="dimension"/>
         <attr name="lineHeight" format="dimension"/>
         <attr name="lineTop" format="dimension"/>
-        <attr name="lineColor" format="color"/>
         <attr name="lineAnimatorDuration" format="integer"/>
         <attr name="hornWidth" format="dimension"/>
         <attr name="hornLength" format="dimension"/>

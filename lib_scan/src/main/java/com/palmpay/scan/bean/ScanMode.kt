@@ -1,6 +1,6 @@
 package com.palmpay.scan.bean
 
-enum class ScanMode {
+enum class ScanMode() {
     SIMPLE,
     MANY
 }

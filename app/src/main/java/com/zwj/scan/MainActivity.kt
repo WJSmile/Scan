@@ -27,11 +27,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         ImmersionBar.with(this).transparentBar().init()
         scanView = findViewById(R.id.scan_view)
-
-        scanView.setScanMode(ScanMode.MANY)
-        scanView.setScanType(ScanType.SCAN_FULL_SCREEN)
         scanView.setOnScanListener(object : OnScanListener {
             override fun onResult(result: List<CodeBean>): Boolean {
+                finish()
                 return true
             }
         })

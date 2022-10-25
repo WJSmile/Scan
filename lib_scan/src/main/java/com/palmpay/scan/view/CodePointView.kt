@@ -23,12 +23,12 @@ class CodePointView @JvmOverloads constructor(
     private var cancelAction: (() -> Unit)? = null
     private var pointAction: ((codeBean: CodeBean) -> Unit)? = null
 
-    var cancelText: String = "cancel"
+    private var cancelText: String = "cancel"
 
     @ColorRes
-    var cancelColor: Int = R.color.width
+    private var cancelColor: Int = R.color.width
 
-    var cancelTextSize: Float = 18.toPx(context)
+    private var cancelTextSize: Float = 18.toPx(context)
 
     var cancelTop = 60.toPx(context).toInt()
 
@@ -165,4 +165,16 @@ class CodePointView @JvmOverloads constructor(
         this.pointAction = pointAction
     }
 
+    fun setCancelText(cancelText:String){
+        this.cancelText =cancelText
+        cancelTextView.text = cancelText
+    }
+
+    fun setCancelTextColor(cancelColor:Int){
+      cancelTextView.setTextColor(cancelColor)
+    }
+
+    fun setCancelTextSize(cancelTextSize:Float) {
+        cancelTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX,cancelTextSize)
+    }
 }
