@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:scanMode="many"
+        app:scanMode="simple"
         app:scanType="scan_box" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
