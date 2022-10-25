@@ -149,7 +149,7 @@ Java_com_palmpay_scan_code_NativeLib_scanCodeCut(JNIEnv *env, jobject thiz, jbyt
                                    box_width, box_top + box_width));
             src = src(rect);
         }
-        obj = distinguish->decode(env, src, 1, box_top, (width - box_width) / 2);
+        obj = distinguish->decode(env, src, 2, box_top, (width - box_width) / 2);
         src.release();
     }
     env->ReleaseByteArrayElements(bytes, bytes_, 0);
