@@ -34,11 +34,11 @@ class BoxView @JvmOverloads constructor(
 
     private val linePaint: Paint = Paint()
 
-    var lineWidth: Float = 300.toPx(context)
+    var lineWidth: Float = boxSize
 
     var lineHeight: Float = 2.toPx(context)
 
-    var lineAnimatorDuration: Long = 2500
+    var lineAnimatorDuration: Long = 5000
 
     private var lineMoveDistance = 0F
 
@@ -129,7 +129,7 @@ class BoxView @JvmOverloads constructor(
             lineAnimator = null
         }
 
-        lineAnimator = ValueAnimator.ofFloat(0F, boxSize)
+        lineAnimator = ValueAnimator.ofFloat(0F, boxSize, 0F)
 
         lineAnimator?.addUpdateListener {
             lineMoveDistance = it.animatedValue as Float

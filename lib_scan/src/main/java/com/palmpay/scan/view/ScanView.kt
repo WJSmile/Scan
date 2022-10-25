@@ -323,7 +323,7 @@ class ScanView @JvmOverloads constructor(
             setLineHeight(typedArray.getDimension(R.styleable.ScanView_lineHeight, 2.toPx(context)))
             setLineTop(typedArray.getDimension(R.styleable.ScanView_lineTop, 0F))
             setLineAnimatorDuration(
-                typedArray.getInt(R.styleable.ScanView_lineAnimatorDuration, 2500).toLong()
+                typedArray.getInt(R.styleable.ScanView_lineAnimatorDuration, 4000).toLong()
             )
             setHornWidth(typedArray.getDimension(R.styleable.ScanView_hornWidth, 6.toPx(context)))
             setHornLength(
