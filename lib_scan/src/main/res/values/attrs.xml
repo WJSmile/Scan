@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="ScanView">
+        <!--扫描模式，simple 为简单模式 识别速度块 支持的类型少
+        many 支持多种类型模式，识别速度慢，支持类型多-->
         <attr name="scanMode" >
             <enum name="simple" value="0"/>
             <enum name="many" value="1"/>
         </attr>
+
         <attr name="scanType">
             <enum name="scan_full_screen" value="0"/>
             <enum name="scan_box" value="1"/>

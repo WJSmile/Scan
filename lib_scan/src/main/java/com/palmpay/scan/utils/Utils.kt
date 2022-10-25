@@ -120,19 +120,13 @@ object Utils {
         }
     }
 
-    private fun getExternalFilesDir(context: Context, path: String): String {
-        val files = context.getExternalFilesDirs(path)
-        return if (files != null && files.isNotEmpty()) {
-            files[0].absolutePath
-        } else context.getExternalFilesDir(path)!!.absolutePath
-    }
 
     fun copyWeChatModel(context: Context): List<String> {
         val pathList: MutableList<String> = mutableListOf()
         try {
             val modelDir = "models"
             val models = context.assets.list(modelDir)
-            val saveDirPath: String = getExternalFilesDir(context, modelDir)
+            val saveDirPath: String = context.cacheDir.absolutePath + "/scan"
             val saveDir = File(saveDirPath)
             if (!saveDir.exists()) {
                 saveDir.mkdirs()
@@ -188,7 +182,7 @@ object Utils {
         val rawImage: ByteArray = bao.toByteArray()
         val options = BitmapFactory.Options()
         options.inPreferredConfig = Bitmap.Config.RGB_565
-        return   BitmapFactory.decodeByteArray(rawImage, 0, rawImage.size, options)
+        return BitmapFactory.decodeByteArray(rawImage, 0, rawImage.size, options)
     }
 
 

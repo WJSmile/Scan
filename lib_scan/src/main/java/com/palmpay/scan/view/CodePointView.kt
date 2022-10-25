@@ -30,7 +30,7 @@ class CodePointView @JvmOverloads constructor(
 
     private var cancelTextSize: Float = 18.toPx(context)
 
-    var cancelTop = 60.toPx(context).toInt()
+    var cancelTop = 55.toPx(context).toInt()
 
     var cancelLeft = 20.toPx(context).toInt()
 
@@ -138,7 +138,7 @@ class CodePointView @JvmOverloads constructor(
         scaleX.repeatCount = ValueAnimator.INFINITE
         scaleY.repeatCount = ValueAnimator.INFINITE
         animatorSet.playTogether(scaleX, scaleY)
-        animatorSet.duration = 1500
+        animatorSet.duration = 2000
         animatorSet.startDelay = 500
         animatorSet.start()
 

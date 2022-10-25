@@ -259,7 +259,7 @@ class ScanView @JvmOverloads constructor(
             setCancelTop(
                 typedArray.getDimensionPixelOffset(
                     R.styleable.ScanView_cancelTop,
-                    60.toPx(context).toInt()
+                    55.toPx(context).toInt()
                 )
             )
 

@@ -1,44 +1,40 @@
 package com.zwj.scan
 
+import android.Manifest
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.view.KeyEvent
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.withCreated
-import com.gyf.immersionbar.ImmersionBar
-import com.palmpay.scan.bean.CodeBean
-import com.palmpay.scan.bean.ScanMode
-import com.palmpay.scan.bean.ScanType
-import com.palmpay.scan.callback.OnScanListener
-import com.palmpay.scan.view.ScanView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.permissionx.guolindev.PermissionX
+import com.permissionx.guolindev.callback.RequestCallback
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var scanView: ScanView
+
+    private var scanCodeTextView: TextView? = null
+    private val scanActivityResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (RESULT_OK == it.resultCode) {
+                scanCodeTextView?.text = it.data?.getStringExtra(ScanActivity.SCAN_CODE_KEY)
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
-        ImmersionBar.with(this).transparentBar().init()
-        scanView = findViewById(R.id.scan_view)
-        scanView.setOnScanListener(object : OnScanListener {
-            override fun onResult(result: List<CodeBean>): Boolean {
-                finish()
-                return true
-            }
-        })
-    }
-
-
-    override fun onDestroy() {
-        super.onDestroy()
-        scanView.release()
+        scanCodeTextView = findViewById(R.id.scan_code_tv)
+        findViewById<Button>(R.id.to_scan).setOnClickListener {
+            PermissionX.init(this).permissions(Manifest.permission.CAMERA)
+                .request { allGranted, _, _ ->
+                    if (allGranted) {
+                        scanActivityResult.launch(Intent(this, ScanActivity::class.java))
+                    } else {
+                        Toast.makeText(this, "权限已拒绝，请开启权限", Toast.LENGTH_LONG).show()
+                    }
+                }
+        }
     }
 
 }
