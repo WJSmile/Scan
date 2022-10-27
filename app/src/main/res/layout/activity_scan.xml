@@ -11,6 +11,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:scanMode="many"
-        app:scanType="scan_box" />
+        app:scanType="scan_full_screen" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

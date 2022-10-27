@@ -7,8 +7,6 @@
 
 #include "JavaCallHelper.h"
 #include <zbar.h>
-#include <src/MultiFormatReader.h>
-#include <src/BinaryBitmap.h>
 #include <src/Result.h>
 #include <src/DecodeHints.h>
 #include <src/ReadBarcode.h>

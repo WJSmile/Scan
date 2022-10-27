@@ -1,5 +1,7 @@
 package com.palmpay.scan.code;
 
+import java.nio.ByteBuffer;
+
 public class YuvUtils {
     static {
         System.loadLibrary("scancode");
@@ -46,4 +48,13 @@ public class YuvUtils {
                                   byte[] dstYuvData,
                                   int width,
                                   int height);
+
+    public native void Android420ToI420(ByteBuffer y, ByteBuffer u, ByteBuffer v,
+                                        int yStride,
+                                        int uStride,
+                                        int vStride,
+                                        int srcPixelStrideUv,
+                                        byte[] dstYuvData,
+                                        int width,
+                                        int height);
 }

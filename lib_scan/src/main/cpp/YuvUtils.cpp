@@ -229,3 +229,35 @@ Java_com_palmpay_scan_code_YuvUtils_scaleAndclipping(JNIEnv *env, jobject thiz,
     env->ReleaseByteArrayElements(dst_yuv_data, dst_yuv_data_, 0);
     env->ReleaseByteArrayElements(scale_yuv_data, scale_yuv_data_, 0);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_palmpay_scan_code_YuvUtils_Android420ToI420(JNIEnv *env, jobject thiz, jobject y,
+                                                             jobject u, jobject v, jint y_stride,
+                                                             jint u_stride, jint v_stride,
+                                                             jint src_pixel_stride_uv,
+                                                             jbyteArray dst_yuv_data, jint width,
+                                                             jint height) {
+    auto *src_y_data_ = (uint8_t *) env->GetDirectBufferAddress(y);
+    auto *src_u_data_ = (uint8_t *) env->GetDirectBufferAddress(u);
+    auto *src_v_data_ = (uint8_t *) env->GetDirectBufferAddress(v);
+
+    jbyte *dst_yuv_data_ = env->GetByteArrayElements(dst_yuv_data, nullptr);
+
+    jint src_y_size = width * height;
+    jint src_u_size = (width >> 1) * (height >> 1);
+
+    jbyte *dst_i420_y_data = dst_yuv_data_;
+    jbyte *dst_i420_u_data = dst_yuv_data_ + src_y_size;
+    jbyte *dst_i420_v_data = dst_yuv_data_ + src_y_size + src_u_size;
+
+    libyuv::Android420ToI420(src_y_data_, y_stride, src_u_data_, u_stride,
+                             src_v_data_, v_stride,
+                             src_pixel_stride_uv, (uint8_t *) dst_i420_y_data, width,
+                             (uint8_t *) dst_i420_u_data,
+                             width >> 1, (uint8_t *) dst_i420_v_data, width >> 1, width, height);
+
+
+    env->ReleaseByteArrayElements(dst_yuv_data, dst_yuv_data_, 0);
+
+}
