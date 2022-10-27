@@ -25,13 +25,16 @@ class ScanActivity : AppCompatActivity() {
         scanView = findViewById(R.id.scan_view)
         scanView?.setOnScanListener(object : OnScanListener {
             override fun onResult(result: List<CodeBean>): Boolean {
-                if (result.isNotEmpty()) {
-                    val intent = Intent()
-                    intent.putExtra(SCAN_CODE_KEY, result[0].codeString)
-                    setResult(RESULT_OK, intent)
-                    finish()
-                }
+
                 return true
+            }
+
+            override fun onPointClick(codeBean: CodeBean) {
+                super.onPointClick(codeBean)
+                val intent = Intent()
+                intent.putExtra(SCAN_CODE_KEY, codeBean.codeString)
+                setResult(RESULT_OK, intent)
+                finish()
             }
         })
     }
